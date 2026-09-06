@@ -188,7 +188,7 @@ local function on_test_fake_start_clicked(menu)
 end
 
 local function on_xml_read(xml_file_name, xml_obj)
-    if xml_file_name ~= [[ui\ui_mm_main.xml]] then
+    if not xml_file_name or not xml_file_name:find([[ui\ui_mm_main]]) then
         return
     end
 

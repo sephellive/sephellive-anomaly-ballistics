@@ -1,8 +1,26 @@
 -- Modded Exes invokes on_xml_read from modxml_* scripts while loading UI XML.
+-- Register the click handler here as well: XML parsing happens during
+-- main_menu:InitControls(), immediately before main_menu_on_init is sent.
+local workshop_button = "btn_sep_ballistics_workshop"
+
+local function start_workshop(menu)
+    if menu and type(menu.OnButton_new_stalker_game) == "function" then
+        menu:OnButton_new_stalker_game()
+    end
+end
+
+local function attach_handler(menu)
+    if not menu or menu._sep_ballistics_workshop_hooked or not menu.AddCallback then return end
+    menu._sep_ballistics_workshop_hooked = true
+    menu:AddCallback(workshop_button, ui_events.BUTTON_CLICKED, start_workshop, menu)
+end
+
 function on_xml_read()
     RegisterScriptCallback("on_xml_read", function(xml_file_name, xml_obj)
-        if xml_file_name ~= [[ui\ui_mm_main.xml]] then return end
-        local existing = xml_obj:query("menu_main btn[name=btn_sep_ballistics_workshop]")
+        -- ui_mm_main.xml is only an include wrapper in Anomaly.  The actual
+        -- main-menu controls arrive through the active layout variant.
+        if not xml_file_name or not xml_file_name:find([[ui\ui_mm_main]]) then return end
+        local existing = xml_obj:query("menu_main btn[name=" .. workshop_button .. "]")
         if existing and existing[1] then return end
         local menu_main = xml_obj:query("menu_main")[1]
         if not menu_main then return end
@@ -11,5 +29,6 @@ function on_xml_read()
             menu_main,
             #menu_main.kids
         )
+        RegisterScriptCallback("main_menu_on_init", attach_handler)
     end)
 end

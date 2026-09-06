@@ -10,12 +10,22 @@ local WORKSHOP = {
     marker_ttl = 2000,
 }
 
+local M = {}
+
 local state = {
     launch_requested = false,
     dummy_spawned = false,
+    loadout_granted = false,
     warned_level = false,
     markers = {},
 }
+
+function M.request_launch()
+    state.launch_requested = true
+    state.dummy_spawned = false
+    state.loadout_granted = false
+    state.warned_level = false
+end
 
 local function lower(value)
     return value and string.lower(tostring(value)) or ""
@@ -161,7 +171,20 @@ local function spawn_dummy_if_needed()
         return
     end
 
-    alife():create(WORKSHOP.target_section, actor:position(), actor:level_vertex_id(), actor:game_vertex_id(), actor:id())
+    if not state.loadout_granted then
+        alife():create("wpn_ak74", actor:position(), actor:level_vertex_id(), actor:game_vertex_id(), actor:id())
+        for _ = 1, 3 do
+            alife():create("ammo_5.45x39_fmj", actor:position(), actor:level_vertex_id(), actor:game_vertex_id(), actor:id())
+        end
+        state.loadout_granted = true
+    end
+
+    local target_pos = vector():set(actor:position())
+    local direction = actor:direction()
+    if direction then
+        target_pos:add(direction:mul(8))
+    end
+    alife():create(WORKSHOP.target_section, target_pos, actor:level_vertex_id(), actor:game_vertex_id())
     if get_story_se_object(WORKSHOP.target_story) then
         state.dummy_spawned = true
         state.launch_requested = false
@@ -310,9 +333,7 @@ local function load_state(m_data)
     state.warned_level = saved.warned_level and true or false
 end
 
-function register()
-    RegisterScriptCallback("on_xml_read", on_xml_read)
-    RegisterScriptCallback("main_menu_on_init", on_main_menu_init)
+function M.register()
     RegisterScriptCallback("actor_on_first_update", actor_on_first_update)
     RegisterScriptCallback("actor_on_update", actor_on_update)
     RegisterScriptCallback("on_game_load", on_game_load)
@@ -323,3 +344,5 @@ function register()
     RegisterScriptCallback("save_state", save_state)
     RegisterScriptCallback("load_state", load_state)
 end
+
+return M

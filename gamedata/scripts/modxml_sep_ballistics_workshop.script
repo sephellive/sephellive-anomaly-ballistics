@@ -2,8 +2,10 @@
 -- Register the click handler here as well: XML parsing happens during
 -- main_menu:InitControls(), immediately before main_menu_on_init is sent.
 local workshop_button = "btn_sep_ballistics_workshop"
+local workshop = require("sep_ballistics_workshop_autoload")
 
 local function start_workshop(menu)
+    workshop.request_launch()
     local console = get_console and get_console() or nil
     if console then
         console:execute("g_game_difficulty gd_stalker")

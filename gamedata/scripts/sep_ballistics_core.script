@@ -2,20 +2,12 @@ local ammo = require("sep_ballistics_ammo")
 local pen = require("sep_ballistics_penetration")
 local zones = require("sep_ballistics_hit_zones")
 local debug = require("sep_ballistics_debug")
+local weapon_resolver = require("sep_ballistics_weapon_resolver")
 local M = {}
 
 local function section(obj)
  if obj and type(obj.section) == "function" then return obj:section() end
  return "unknown"
-end
-local function active_ammo(shooter)
- -- Engine exposes the active weapon; ammo lookup deliberately remains defensive.
- if shooter and type(shooter.active_item) == "function" then
-  local item = shooter:active_item()
-  if item and type(item.get_ammo_type) == "function" then return item:get_ammo_type() end
-  if item and type(item.section) == "function" then return item:section() end
- end
- return nil
 end
 function M.calculate(input)
  local profile, profile_id, unknown = ammo.resolve(input.ammo_id)
@@ -33,12 +25,17 @@ end
 function M.from_engine(target, hit, amount, shooter, bone)
  -- Native APIs do not expose shot distance/ammo consistently; retain native damage as
  -- the fallback and only replace it when an explicit ammo section can be resolved.
- local ammo_id = active_ammo(shooter)
- if not ammo_id then return nil end
+ local weapon_data, reason = weapon_resolver.resolve_weapon(shooter)
+ if not weapon_data then return nil, reason end
  local distance = 0
  if target and shooter and target.position and shooter.position then
   local a,b=target:position(),shooter:position(); if a and b then distance=a:distance_to(b) end
  end
- return M.calculate({weapon_id=section(shooter),ammo_id=ammo_id,distance_m=distance,hit_zone=zones.normalize(bone),armor_resistance=0})
+ local muzzle_factor = weapon_data.bullet_speed and weapon_data.bullet_speed / 1 or 1
+ -- Probe pass intentionally does not use this value for balancing. It is included
+ -- in telemetry so the effective merged weapon value can be verified in-game.
+ local result = M.calculate({weapon_id=weapon_data.weapon_section,ammo_id=weapon_data.ammo_section,distance_m=distance,hit_zone=zones.normalize(bone),armor_resistance=0})
+ result.runtime = {ammo_index=weapon_data.ammo_index, weapon_bullet_speed=weapon_data.bullet_speed, resolver_reason=reason}
+ return result
 end
 return M

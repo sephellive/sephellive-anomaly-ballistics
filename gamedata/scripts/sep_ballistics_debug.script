@@ -5,6 +5,7 @@ function M.warn_unknown(ammo, weapon)
 end
 function M.emit(r)
  if not M.enabled then return end
- printf("[SEP BALLISTICS] ammo=%s distance=%.1f zone=%s v=%.0f e=%.0f armor=%.1f chance=%.0f%% result=%s residual=%.0f tissue=%.1f bleed=%.1f blunt=%.1f",r.ammo_id,r.distance_m,r.hit_zone,r.impact_velocity,r.impact_energy,r.armor.resistance,r.armor.penetration_chance*100,r.armor.penetration_result,r.projectile.residual_energy,r.body.tissue_damage,r.body.bleeding,r.body.blunt_trauma)
+ local x=r.runtime or {}
+ printf("[SEP BALLISTICS] weapon=%s ammo=%s index=%s speed=%s distance=%.1f zone=%s v=%.0f e=%.0f armor=%.1f chance=%.0f%% result=%s residual=%.0f tissue=%.1f bleed=%.1f blunt=%.1f",r.weapon_id,r.ammo_id,tostring(x.ammo_index),tostring(x.weapon_bullet_speed),r.distance_m,r.hit_zone,r.impact_velocity,r.impact_energy,r.armor.resistance,r.armor.penetration_chance*100,r.armor.penetration_result,r.projectile.residual_energy,r.body.tissue_damage,r.body.bleeding,r.body.blunt_trauma)
 end
 return M

@@ -1,0 +1,24 @@
+-- Runtime resolver. get_ammo_type() is a zero-based index, never an ammo section.
+local M = { cache = {} }
+
+local function list_for(section)
+    if M.cache[section] then return M.cache[section] end
+    local list = parse_list and parse_list(ini_sys, section, "ammo_class") or nil
+    M.cache[section] = list or false
+    return list
+end
+
+function M.resolve_weapon(shooter)
+    local weapon = shooter and type(shooter.active_item) == "function" and shooter:active_item() or nil
+    if not weapon or not weapon.section then return nil, "no active weapon" end
+    local weapon_section = weapon:section()
+    local ammo_index = weapon.get_ammo_type and tonumber(weapon:get_ammo_type()) or nil
+    local classes = list_for(weapon_section)
+    if ammo_index == nil or not classes then return nil, "no ammo_class or ammo index" end
+    local ammo_section = classes[ammo_index + 1]
+    if not ammo_section then return nil, "ammo index outside ammo_class" end
+    local speed = ini_sys and ini_sys:r_float_ex(weapon_section, "bullet_speed") or nil
+    return {weapon=weapon, weapon_section=weapon_section, ammo_section=ammo_section, ammo_index=ammo_index, bullet_speed=speed}
+end
+
+return M

@@ -238,15 +238,8 @@ local function mark_immortal(hit, obj)
     if npc_section_name(obj) ~= WORKSHOP.target_section then
         return false
     end
-
-    if hit then
-        if hit.power ~= nil then
-            hit.power = 0
-        end
-        if hit.impulse ~= nil then
-            hit.impulse = 0
-        end
-    end
+    -- Probe mode must observe the normal hit pipeline.  Do not zero hit.power here:
+    -- a post-lethal wrapper has not yet been verified for this engine/BHS setup.
     return true
 end
 

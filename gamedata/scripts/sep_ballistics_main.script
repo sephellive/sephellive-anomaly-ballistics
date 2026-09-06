@@ -3,29 +3,21 @@ local zones = require("sep_ballistics_hit_zones")
 local bhs = require("sep_ballistics_bhs_adapter")
 local debug = require("sep_ballistics_debug")
 local M = {}
-local pending_actor = nil
+-- P0 probe mode: custom damage is disabled until live telemetry proves all inputs.
+local pending_actor_hits = {}
 function M.actor_on_before_hit(s_hit, bone)
  local draft = s_hit and s_hit.draftsman
- pending_actor = core.from_engine(db and db.actor, s_hit, s_hit and s_hit.power, draft, bone)
- if pending_actor then
-  -- Replace only player firearm damage when the real BHS adapter is available.
-  -- BHS receives the calculated injury on the next update; no second health loss.
-  if bhs.available() and s_hit then s_hit.power = 0 end
-  debug.emit(pending_actor)
- end
+ local result = core.from_engine(db and db.actor, s_hit, s_hit and s_hit.power, draft, bone)
+ if result then pending_actor_hits[#pending_actor_hits + 1] = result; debug.emit(result) end
 end
 function M.actor_on_update()
- if not pending_actor then return end
- local result=pending_actor; pending_actor=nil
- local ok = bhs.apply(result, zones.bhs(result.hit_zone))
- if not ok and debug.enabled then printe("! [SEP BALLISTICS] BHS adapter unavailable; native damage retained") end
+ -- Queue is deliberately retained and drained to prove rapid-hit handling.
+ -- Do not suppress native damage or call BHS until the probe confirms every input.
+ for i = #pending_actor_hits, 1, -1 do table.remove(pending_actor_hits, i) end
 end
-function M.npc_on_before_hit(obj, hit, amount, flags)
- local r=core.from_engine(obj,hit,amount,hit and hit.draftsman,nil)
+function M.npc_on_before_hit(obj, hit, bone_id, flags)
+ local r=core.from_engine(obj,hit,bone_id,hit and hit.draftsman,bone_id)
  if r then
-  -- NPCs have no BHS API in the installed BHS version.  Preserve engine damage but
-  -- scale it from the same residual projectile result rather than adding a second hit.
-  if hit and hit.power ~= nil then hit.power = math.max(0.01, r.body.tissue_damage / 100) end
   debug.emit(r)
  end
  return false

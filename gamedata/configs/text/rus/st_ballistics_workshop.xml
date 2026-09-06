@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <string_table>
     <string id="sep_ballistics_workshop_menu">
-        <text>Р‘Р°Р»Р»РёСЃС‚РёС‡РµСЃРєР°СЏ РјР°СЃС‚РµСЂСЃРєР°СЏ</text>
+        <text>Баллистическая мастерская</text>
     </string>
     <string id="sep_ballistics_workshop_news_title">
-        <text>Ballistics Workshop</text>
+        <text>Баллистическая мастерская</text>
     </string>
     <string id="sep_ballistics_workshop_news_spawned">
-        <text>Test target spawned.</text>
+        <text>Тестовая цель создана.</text>
     </string>
     <string id="sep_ballistics_workshop_dummy_name">
-        <text>Workshop Dummy</text>
+        <text>Тестовый манекен</text>
     </string>
     <string id="sep_ballistics_workshop_dummy_bio">
-        <text>Immortal test target for ballistics debugging.</text>
+        <text>Неуязвимая тестовая цель для отладки баллистики.</text>
     </string>
 </string_table>
-

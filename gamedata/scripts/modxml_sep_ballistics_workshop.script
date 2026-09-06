@@ -4,8 +4,15 @@
 local workshop_button = "btn_sep_ballistics_workshop"
 
 local function start_workshop(menu)
-    if menu and type(menu.OnButton_new_stalker_game) == "function" then
-        menu:OnButton_new_stalker_game()
+    local console = get_console and get_console() or nil
+    if console then
+        console:execute("g_game_difficulty gd_stalker")
+        console:execute("start server(all/single/alife/new) client(localhost)")
+        console:execute("main_menu off")
+        return
+    end
+    if menu and type(menu.OnButton_new_game) == "function" then
+        menu:OnButton_new_game()
     end
 end
 

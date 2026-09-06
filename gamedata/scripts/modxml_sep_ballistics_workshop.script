@@ -1,0 +1,15 @@
+-- Modded Exes invokes on_xml_read from modxml_* scripts while loading UI XML.
+function on_xml_read()
+    RegisterScriptCallback("on_xml_read", function(xml_file_name, xml_obj)
+        if xml_file_name ~= [[ui\ui_mm_main.xml]] then return end
+        local existing = xml_obj:query("menu_main btn[name=btn_sep_ballistics_workshop]")
+        if existing and existing[1] then return end
+        local menu_main = xml_obj:query("menu_main")[1]
+        if not menu_main then return end
+        xml_obj:insertFromXMLString(
+            [[<btn name="btn_sep_ballistics_workshop" caption="sep_ballistics_workshop_menu" />]],
+            menu_main,
+            #menu_main.kids
+        )
+    end)
+end

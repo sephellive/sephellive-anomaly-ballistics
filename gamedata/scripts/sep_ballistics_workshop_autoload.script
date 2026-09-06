@@ -3,7 +3,7 @@
 
 local WORKSHOP = {
     button_name = "btn_sep_ballistics_workshop",
-    button_caption = "ui_mm_menu_test_fake_start",
+    button_caption = "sep_ballistics_workshop_menu",
     target_level = "fake_start",
     target_section = "sep_ballistics_workshop_dummy",
     target_story = "sep_ballistics_workshop_dummy",
@@ -204,7 +204,7 @@ local function on_xml_read(xml_file_name, xml_obj)
     end
 
     xml_obj:insertFromXMLString(
-        [[<btn name="btn_sep_ballistics_workshop" caption="ui_mm_menu_test_fake_start"/>]],
+        [[<btn name="btn_sep_ballistics_workshop" caption="sep_ballistics_workshop_menu"/>]],
         menu_main,
         #menu_main.kids
     )

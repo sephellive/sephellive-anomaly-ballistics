@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <string_table>
-    <string id="ui_mm_menu_test_fake_start">
-        <text>Test Fake Start</text>
+    <string id="sep_ballistics_workshop_menu">
+        <text>Баллистическая мастерская</text>
     </string>
     <string id="sep_ballistics_workshop_news_title">
         <text>Ballistics Workshop</text>

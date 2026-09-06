@@ -1,7 +1,8 @@
 # Ballistics model
 
 The system is cartridge-centric. Weapon sections provide the loaded ammo
-section and, later, an effective muzzle modifier; terminal values are never
+section and their effective inherited `bullet_speed` becomes a bounded muzzle
+factor against the profile's nominal velocity; terminal values are never
 hand-authored per rifle.
 
 ## Penetration v2

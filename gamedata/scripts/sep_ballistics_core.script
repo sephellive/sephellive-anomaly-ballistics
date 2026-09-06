@@ -31,11 +31,20 @@ function from_engine(target, hit, amount, shooter, bone)
  end
  local hit_zone = zones.normalize(bone)
  local armor = armor_resolver.resolve(target, hit_zone, bone)
+ local ammo = sep_ballistics_ammo
+ local profile = ammo and ammo.resolve and ammo.resolve(weapon_data.ammo_section) or nil
+ local muzzle_factor = 1
+ if profile and type(weapon_data.bullet_speed) == "number" and profile.muzzle_velocity and profile.muzzle_velocity > 0 then
+  -- The weapon's effective inherited bullet_speed is a physical muzzle
+  -- modifier, not a weapon-specific terminal-damage multiplier. Clamp only
+  -- against corrupt/missing LTX values; normal MRAA values remain unchanged.
+  muzzle_factor = math.max(0.50, math.min(1.50, weapon_data.bullet_speed / profile.muzzle_velocity))
+ end
  -- Probe pass intentionally does not apply weapon speed or armour to damage. Both
  -- values are captured first and must be proven through a live game log.
- local result = calculate({weapon_id=weapon_data.weapon_section,ammo_id=weapon_data.ammo_section,distance_m=distance,hit_zone=hit_zone,armor_resistance=armor.resistance})
+ local result = calculate({weapon_id=weapon_data.weapon_section,ammo_id=weapon_data.ammo_section,distance_m=distance,hit_zone=hit_zone,armor_resistance=armor.resistance,muzzle_factor=muzzle_factor})
  if not result then return nil, "ballistics calculation unavailable" end
  result.armor.source, result.armor.durability, result.armor.material, result.armor.bone_id = armor.source, armor.durability, armor.material, armor.bone_id
- result.runtime = {ammo_index=weapon_data.ammo_index, weapon_bullet_speed=weapon_data.bullet_speed, resolver_reason=reason, armor_source=armor.source}
+ result.runtime = {ammo_index=weapon_data.ammo_index, weapon_bullet_speed=weapon_data.bullet_speed, muzzle_factor=muzzle_factor, resolver_reason=reason, armor_source=armor.source}
  return result
 end

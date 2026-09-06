@@ -8,8 +8,8 @@ function emit(r)
  if not enabled then return end
  local x=r.runtime or {}
  local line = string.format(
-  "[SEP BALLISTICS] weapon=%s ammo=%s profile=%s index=%s speed=%s distance=%.1f bone=%s zone=%s armor_source=%s armor=%.3f ratio=%.2f chance=%.0f%% roll=%.2f result=%s residual=%.0f residual_pen=%.1f tissue=%.1f bleed=%.1f blunt=%.1f sink=%s",
-  tostring(r.weapon_id), tostring(r.ammo_id), tostring(r.profile_id), tostring(x.ammo_index), tostring(x.weapon_bullet_speed),
+  "[SEP BALLISTICS] weapon=%s ammo=%s profile=%s index=%s speed=%s muzzle=%.3f distance=%.1f bone=%s zone=%s armor_source=%s armor=%.3f ratio=%.2f chance=%.0f%% roll=%.2f result=%s residual=%.0f residual_pen=%.1f tissue=%.1f bleed=%.1f blunt=%.1f sink=%s",
+  tostring(r.weapon_id), tostring(r.ammo_id), tostring(r.profile_id), tostring(x.ammo_index), tostring(x.weapon_bullet_speed), tonumber(x.muzzle_factor) or 1,
   tonumber(r.distance_m) or 0, tostring(r.armor.bone_id), tostring(r.hit_zone), tostring(r.armor.source),
   tonumber(r.armor.resistance) or 0, tonumber(r.armor.penetration_ratio) or 0, (tonumber(r.armor.penetration_chance) or 0) * 100, tonumber(r.armor.penetration_roll) or 0,
   tostring(r.armor.penetration_result), tonumber(r.projectile.residual_energy) or 0, tonumber(r.projectile.residual_penetration) or 0,

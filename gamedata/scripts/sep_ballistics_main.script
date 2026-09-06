@@ -1,0 +1,38 @@
+local core = require("sep_ballistics_core")
+local zones = require("sep_ballistics_hit_zones")
+local bhs = require("sep_ballistics_bhs_adapter")
+local debug = require("sep_ballistics_debug")
+local M = {}
+local pending_actor = nil
+function M.actor_on_before_hit(s_hit, bone)
+ local draft = s_hit and s_hit.draftsman
+ pending_actor = core.from_engine(db and db.actor, s_hit, s_hit and s_hit.power, draft, bone)
+ if pending_actor then
+  -- Replace only player firearm damage when the real BHS adapter is available.
+  -- BHS receives the calculated injury on the next update; no second health loss.
+  if bhs.available() and s_hit then s_hit.power = 0 end
+  debug.emit(pending_actor)
+ end
+end
+function M.actor_on_update()
+ if not pending_actor then return end
+ local result=pending_actor; pending_actor=nil
+ local ok = bhs.apply(result, zones.bhs(result.hit_zone))
+ if not ok and debug.enabled then printe("! [SEP BALLISTICS] BHS adapter unavailable; native damage retained") end
+end
+function M.npc_on_before_hit(obj, hit, amount, flags)
+ local r=core.from_engine(obj,hit,amount,hit and hit.draftsman,nil)
+ if r then
+  -- NPCs have no BHS API in the installed BHS version.  Preserve engine damage but
+  -- scale it from the same residual projectile result rather than adding a second hit.
+  if hit and hit.power ~= nil then hit.power = math.max(0.01, r.body.tissue_damage / 100) end
+  debug.emit(r)
+ end
+ return false
+end
+function M.on_game_start()
+ RegisterScriptCallback("actor_on_before_hit", M.actor_on_before_hit)
+ RegisterScriptCallback("actor_on_update", M.actor_on_update)
+ RegisterScriptCallback("npc_on_before_hit", M.npc_on_before_hit)
+end
+return M

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+    <string id="ui_mm_menu_test_fake_start">
+        <text>Test Fake Start</text>
+    </string>
+    <string id="sep_ballistics_workshop_news_title">
+        <text>Ballistics Workshop</text>
+    </string>
+    <string id="sep_ballistics_workshop_news_spawned">
+        <text>Test target spawned.</text>
+    </string>
+    <string id="sep_ballistics_workshop_dummy_name">
+        <text>Workshop Dummy</text>
+    </string>
+    <string id="sep_ballistics_workshop_dummy_bio">
+        <text>Immortal test target for ballistics debugging.</text>
+    </string>
+</string_table>
+

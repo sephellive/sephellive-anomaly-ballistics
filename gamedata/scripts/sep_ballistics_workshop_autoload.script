@@ -1,0 +1,332 @@
+-- Sephellive ballistics workshop.
+-- Adds a main menu entry, spawns a dummy NPC on Fake Start, and shows hit telemetry.
+
+local WORKSHOP = {
+    button_name = "btn_sep_ballistics_workshop",
+    button_caption = "ui_mm_menu_test_fake_start",
+    target_level = "fake_start",
+    target_section = "sep_ballistics_workshop_dummy",
+    target_story = "sep_ballistics_workshop_dummy",
+    marker_ttl = 2000,
+}
+
+local state = {
+    launch_requested = false,
+    dummy_spawned = false,
+    warned_level = false,
+    markers = {},
+}
+
+local function lower(value)
+    return value and string.lower(tostring(value)) or ""
+end
+
+local function safe_actor()
+    return db and db.actor or nil
+end
+
+local function current_level_name()
+    if not level or not level.present or not level.present() then
+        return ""
+    end
+    return lower(level.name())
+end
+
+local function format_damage(amount)
+    local value = tonumber(amount) or 0
+    return string.format("%.1f", value)
+end
+
+local function format_source(who)
+    if not who then
+        return "world"
+    end
+    if type(who.name) == "function" then
+        local name = who:name()
+        if name and name ~= "" then
+            return name
+        end
+    end
+    if type(who.section) == "function" then
+        local section = who:section()
+        if section and section ~= "" then
+            return section
+        end
+    end
+    return "unknown"
+end
+
+local function push_news(title_id, text)
+    local actor = safe_actor()
+    if not actor or not actor.give_game_news then
+        printf("Sephellive ballistics workshop | %s", text)
+        return
+    end
+    actor:give_game_news(game.translate_string(title_id), text, "ui_iconsTotal_grouping", 3000, 3000, 1)
+end
+
+local function remove_marker(id)
+    if not id or not debug_render or not debug_render.remove_object then
+        return
+    end
+    debug_render.remove_object(id)
+end
+
+local function refresh_marker(obj)
+    if not obj or not debug_render or not debug_render.add_object then
+        return
+    end
+
+    local id = obj:id()
+    local dbg = debug_render.add_object(id, DBG_ScriptObject.sphere)
+    if not dbg then
+        return
+    end
+
+    local sphere = dbg:cast_dbg_sphere()
+    if not sphere then
+        return
+    end
+
+    sphere.visible = true
+    sphere.hud = true
+    sphere.color = fcolor():set(1, 0.15, 0.15, 0.9)
+
+    local scale = matrix():identity():scale(0.15, 0.15, 0.15)
+    local pos = matrix():identity():translate(obj:position())
+    sphere.matrix = matrix():mul(pos, scale)
+
+    state.markers[id] = time_global() + WORKSHOP.marker_ttl
+end
+
+local function clear_expired_markers()
+    if not next(state.markers) then
+        return
+    end
+
+    local now = time_global()
+    for id, expires_at in pairs(state.markers) do
+        if now >= expires_at then
+            remove_marker(id)
+            state.markers[id] = nil
+        end
+    end
+end
+
+local function target_object()
+    if not get_story_se_object then
+        return nil
+    end
+
+    local se_obj = get_story_se_object(WORKSHOP.target_story)
+    if not se_obj then
+        return nil
+    end
+
+    if level and level.object_by_id then
+        local obj = level.object_by_id(se_obj.id)
+        if obj then
+            return obj
+        end
+    end
+
+    return nil
+end
+
+local function spawn_dummy_if_needed()
+    if state.dummy_spawned then
+        return
+    end
+
+    if current_level_name() ~= WORKSHOP.target_level then
+        if state.launch_requested and not state.warned_level then
+            state.warned_level = true
+            push_news(
+                "sep_ballistics_workshop_news_title",
+                string.format("Waiting for level [%s], current level is [%s]", WORKSHOP.target_level, current_level_name())
+            )
+        end
+        return
+    end
+
+    if target_object() then
+        state.dummy_spawned = true
+        state.launch_requested = false
+        push_news("sep_ballistics_workshop_news_title", game.translate_string("sep_ballistics_workshop_news_spawned"))
+        return
+    end
+
+    local actor = safe_actor()
+    if not actor or not alife() then
+        return
+    end
+
+    alife():create(WORKSHOP.target_section, actor:position(), actor:level_vertex_id(), actor:game_vertex_id(), actor:id())
+    if get_story_se_object(WORKSHOP.target_story) then
+        state.dummy_spawned = true
+        state.launch_requested = false
+        push_news("sep_ballistics_workshop_news_title", game.translate_string("sep_ballistics_workshop_news_spawned"))
+    end
+end
+
+local function on_test_fake_start_clicked(menu)
+    state.launch_requested = true
+    state.dummy_spawned = false
+    state.warned_level = false
+
+    if menu and type(menu.OnButton_new_stalker_game) == "function" then
+        menu:OnButton_new_stalker_game()
+        return
+    end
+
+    local console = get_console and get_console() or nil
+    if console then
+        console:execute("g_game_difficulty gd_stalker")
+        console:execute("start server(all/single/alife/new) client(localhost)")
+        console:execute("main_menu off")
+    end
+end
+
+local function on_xml_read(xml_file_name, xml_obj)
+    if xml_file_name ~= [[ui\ui_mm_main.xml]] then
+        return
+    end
+
+    local existing = xml_obj:query("menu_main btn[name=btn_sep_ballistics_workshop]")
+    if existing and existing[1] then
+        return
+    end
+
+    local menu_main_list = xml_obj:query("menu_main")
+    local menu_main = menu_main_list and menu_main_list[1] or nil
+    if not menu_main then
+        return
+    end
+
+    xml_obj:insertFromXMLString(
+        [[<btn name="btn_sep_ballistics_workshop" caption="ui_mm_menu_test_fake_start"/>]],
+        menu_main,
+        #menu_main.kids
+    )
+end
+
+local function on_main_menu_init(menu)
+    if not menu or menu._sep_ballistics_workshop_hooked then
+        return
+    end
+
+    menu._sep_ballistics_workshop_hooked = true
+    if menu.AddCallback then
+        menu:AddCallback(WORKSHOP.button_name, ui_events.BUTTON_CLICKED, on_test_fake_start_clicked, menu)
+    end
+end
+
+local function npc_section_name(obj)
+    if not obj then
+        return ""
+    end
+    if type(obj.section) == "function" then
+        return lower(obj:section())
+    end
+    if type(obj.section_name) == "function" then
+        return lower(obj:section_name())
+    end
+    return ""
+end
+
+local function mark_immortal(hit, obj)
+    if npc_section_name(obj) ~= WORKSHOP.target_section then
+        return false
+    end
+
+    if hit then
+        if hit.power ~= nil then
+            hit.power = 0
+        end
+        if hit.impulse ~= nil then
+            hit.impulse = 0
+        end
+    end
+    return true
+end
+
+local function report_hit(obj, amount, who, bone_index)
+    local section = npc_section_name(obj)
+    if section == "" then
+        section = "unknown"
+    end
+
+    local text = string.format(
+        "Hit %s for %s dmg on bone %s from %s",
+        section,
+        format_damage(amount),
+        tostring(bone_index or "-"),
+        format_source(who)
+    )
+    push_news("sep_ballistics_workshop_news_title", text)
+    refresh_marker(obj)
+end
+
+local function actor_on_first_update()
+    spawn_dummy_if_needed()
+end
+
+local function actor_on_update()
+    clear_expired_markers()
+    spawn_dummy_if_needed()
+end
+
+local function on_game_load()
+    spawn_dummy_if_needed()
+end
+
+local function npc_on_before_hit(obj, hit, amount, flags)
+    return mark_immortal(hit, obj)
+end
+
+local function npc_on_hit_callback(obj, amount, local_direction, who, bone_index)
+    report_hit(obj, amount, who, bone_index)
+end
+
+local function monster_on_before_hit(obj, hit, amount, flags)
+    return false
+end
+
+local function monster_on_hit_callback(obj, amount, local_direction, who, bone_index)
+    if obj and amount then
+        report_hit(obj, amount, who, bone_index)
+    end
+end
+
+local function save_state(m_data)
+    m_data.sep_ballistics_workshop = {
+        launch_requested = state.launch_requested,
+        dummy_spawned = state.dummy_spawned,
+        warned_level = state.warned_level,
+    }
+end
+
+local function load_state(m_data)
+    local saved = m_data and m_data.sep_ballistics_workshop or nil
+    if not saved then
+        return
+    end
+
+    state.launch_requested = saved.launch_requested and true or false
+    state.dummy_spawned = saved.dummy_spawned and true or false
+    state.warned_level = saved.warned_level and true or false
+end
+
+function register()
+    RegisterScriptCallback("on_xml_read", on_xml_read)
+    RegisterScriptCallback("main_menu_on_init", on_main_menu_init)
+    RegisterScriptCallback("actor_on_first_update", actor_on_first_update)
+    RegisterScriptCallback("actor_on_update", actor_on_update)
+    RegisterScriptCallback("on_game_load", on_game_load)
+    RegisterScriptCallback("npc_on_before_hit", npc_on_before_hit)
+    RegisterScriptCallback("npc_on_hit_callback", npc_on_hit_callback)
+    RegisterScriptCallback("monster_on_before_hit", monster_on_before_hit)
+    RegisterScriptCallback("monster_on_hit_callback", monster_on_hit_callback)
+    RegisterScriptCallback("save_state", save_state)
+    RegisterScriptCallback("load_state", load_state)
+end

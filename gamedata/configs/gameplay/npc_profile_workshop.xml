@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<xml>
+    <character id="sep_ballistics_workshop_dummy">
+        <class>sep_ballistics_workshop_dummy</class>
+        <specific_character>sep_ballistics_workshop_dummy</specific_character>
+    </character>
+</xml>
+

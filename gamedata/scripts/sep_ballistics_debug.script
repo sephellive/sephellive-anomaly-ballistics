@@ -1,0 +1,10 @@
+local M = {enabled=false, warned={}}
+function M.warn_unknown(ammo, weapon)
+ local key=tostring(ammo)..":"..tostring(weapon); if M.warned[key] then return end; M.warned[key]=true
+ if M.enabled then printe("! [SEP BALLISTICS] fallback ammo="..tostring(ammo).." weapon="..tostring(weapon)) end
+end
+function M.emit(r)
+ if not M.enabled then return end
+ printf("[SEP BALLISTICS] ammo=%s distance=%.1f zone=%s v=%.0f e=%.0f armor=%.1f chance=%.0f%% result=%s residual=%.0f tissue=%.1f bleed=%.1f blunt=%.1f",r.ammo_id,r.distance_m,r.hit_zone,r.impact_velocity,r.impact_energy,r.armor.resistance,r.armor.penetration_chance*100,r.armor.penetration_result,r.projectile.residual_energy,r.body.tissue_damage,r.body.bleeding,r.body.blunt_trauma)
+end
+return M

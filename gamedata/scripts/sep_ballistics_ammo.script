@@ -1,0 +1,35 @@
+-- Central cartridge registry.  Weapon sections never own terminal-damage profiles.
+local M = {}
+
+local profiles = {
+    ["9x19_fmj"] = {caliber="9x19", mass_g=7.5, muzzle_velocity=360, penetration=18, retention=0.0018, drag=0.0022, tissue=16, blunt=0.10, kind="FMJ"},
+    ["9x19_ap"] = {caliber="9x19", mass_g=6.1, muzzle_velocity=400, penetration=29, retention=0.0015, drag=0.0020, tissue=12, blunt=0.08, kind="AP"},
+    ["545_fmj"] = {caliber="5.45x39", mass_g=3.4, muzzle_velocity=880, penetration=38, retention=0.0011, drag=0.0014, tissue=26, blunt=0.08, kind="FMJ"},
+    ["545_ap"] = {caliber="5.45x39", mass_g=3.6, muzzle_velocity=890, penetration=52, retention=0.0008, drag=0.0012, tissue=20, blunt=0.06, kind="AP"},
+    ["556_fmj"] = {caliber="5.56x45", mass_g=4.0, muzzle_velocity=910, penetration=43, retention=0.0010, drag=0.0013, tissue=28, blunt=0.08, kind="FMJ"},
+    ["556_ap"] = {caliber="5.56x45", mass_g=4.0, muzzle_velocity=930, penetration=58, retention=0.0007, drag=0.0011, tissue=21, blunt=0.06, kind="AP"},
+    ["76239_fmj"] = {caliber="7.62x39", mass_g=8.0, muzzle_velocity=715, penetration=42, retention=0.0012, drag=0.0015, tissue=32, blunt=0.12, kind="FMJ"},
+    ["76239_ap"] = {caliber="7.62x39", mass_g=7.9, muzzle_velocity=730, penetration=58, retention=0.0008, drag=0.0012, tissue=24, blunt=0.09, kind="AP"},
+    ["76251_fmj"] = {caliber="7.62x51", mass_g=9.5, muzzle_velocity=830, penetration=55, retention=0.0008, drag=0.0011, tissue=42, blunt=0.15, kind="FMJ"},
+    ["76251_ap"] = {caliber="7.62x51", mass_g=9.7, muzzle_velocity=850, penetration=70, retention=0.0006, drag=0.0009, tissue=32, blunt=0.11, kind="AP"},
+    ["76254_fmj"] = {caliber="7.62x54R", mass_g=9.6, muzzle_velocity=830, penetration=58, retention=0.0007, drag=0.0010, tissue=44, blunt=0.16, kind="FMJ"},
+    ["76254_ap"] = {caliber="7.62x54R", mass_g=9.8, muzzle_velocity=850, penetration=74, retention=0.0005, drag=0.0008, tissue=33, blunt=0.12, kind="AP"},
+    ["12_buck"] = {caliber="12ga", mass_g=28, muzzle_velocity=390, penetration=11, retention=0.0040, drag=0.0050, tissue=8, blunt=0.18, pellets=8, kind="BUCKSHOT"},
+    ["12_slug"] = {caliber="12ga", mass_g=32, muzzle_velocity=450, penetration=36, retention=0.0020, drag=0.0025, tissue=36, blunt=0.35, kind="SLUG"},
+}
+local exact = {
+ ["ammo_9x19_fmj"]="9x19_fmj", ["ammo_9x19_pbp"]="9x19_ap", ["ammo_9x19_ap"]="9x19_ap",
+ ["ammo_5.45x39_fmj"]="545_fmj", ["ammo_5.45x39_ep"]="545_fmj", ["ammo_5.45x39_ap"]="545_ap",
+ ["ammo_5.56x45_fmj"]="556_fmj", ["ammo_5.56x45_ss190"]="556_ap", ["ammo_5.56x45_ap"]="556_ap",
+ ["ammo_7.62x39_fmj"]="76239_fmj", ["ammo_7.62x39_ap"]="76239_ap",
+ ["ammo_7.62x51_fmj"]="76251_fmj", ["ammo_7.62x51_ap"]="76251_ap",
+ ["ammo_7.62x54_7h1"]="76254_fmj", ["ammo_7.62x54_7h14"]="76254_ap", ["ammo_7.62x54_ap"]="76254_ap",
+ ["ammo_12x70_buck"]="12_buck", ["ammo_12x70_buck_self"]="12_buck", ["ammo_12x76_zhekan"]="12_slug", ["ammo_12x76_dart"]="12_slug", ["ammo_12x76_bull"]="12_slug",
+}
+local fallback = {caliber="unknown", mass_g=7, muzzle_velocity=400, penetration=18, retention=0.002, drag=0.002, tissue=15, blunt=0.1, kind="FALLBACK"}
+function M.resolve(section)
+ local key = tostring(section or ""):lower():gsub("_verybad$", ""):gsub("_bad$", "")
+ local id = exact[key]
+ return profiles[id] or fallback, id or "fallback", not id
+end
+return M

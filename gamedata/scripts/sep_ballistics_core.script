@@ -1,0 +1,44 @@
+local ammo = require("sep_ballistics_ammo")
+local pen = require("sep_ballistics_penetration")
+local zones = require("sep_ballistics_hit_zones")
+local debug = require("sep_ballistics_debug")
+local M = {}
+
+local function section(obj)
+ if obj and type(obj.section) == "function" then return obj:section() end
+ return "unknown"
+end
+local function active_ammo(shooter)
+ -- Engine exposes the active weapon; ammo lookup deliberately remains defensive.
+ if shooter and type(shooter.active_item) == "function" then
+  local item = shooter:active_item()
+  if item and type(item.get_ammo_type) == "function" then return item:get_ammo_type() end
+  if item and type(item.section) == "function" then return item:section() end
+ end
+ return nil
+end
+function M.calculate(input)
+ local profile, profile_id, unknown = ammo.resolve(input.ammo_id)
+ if unknown then debug.warn_unknown(input.ammo_id, input.weapon_id) end
+ local velocity, energy, capability = pen.impact(profile, input.distance_m, input.muzzle_factor)
+ local resistance = math.max(0, tonumber(input.armor_resistance) or 0)
+ local outcome, chance, roll = pen.resolve(capability, resistance, input.rng)
+ local residual = outcome == "PENETRATED" and energy * math.max(.15, 1 - resistance / math.max(capability, .01) * .5) or (outcome == "PARTIAL" and energy * .12 or 0)
+ local terminal = profile.tissue * (residual / math.max(energy, .01))
+ if profile.kind == "BUCKSHOT" then terminal = terminal * (profile.pellets or 1) end
+ if outcome == "STOPPED" then terminal = 0 end
+ local blunt = energy / 1000 * profile.blunt * (outcome == "PENETRATED" and .25 or 1)
+ return {weapon_id=input.weapon_id or "unknown", ammo_id=input.ammo_id or "unknown", profile_id=profile_id, distance_m=math.max(0,input.distance_m or 0), hit_zone=input.hit_zone or "TORSO", impact_velocity=velocity, impact_energy=energy, armor={encountered=resistance>0,resistance=resistance,penetration_chance=chance,penetration_roll=roll,penetration_result=outcome,degradation=energy/1000*(outcome=="PENETRATED" and 1 or .4)}, projectile={residual_energy=residual,deformation=outcome=="STOPPED" and "stopped" or "deformed",fragmentation=profile.kind=="HP"},body={tissue_damage=terminal,bleeding=terminal*(profile.kind=="HP" and .8 or .35),blunt_trauma=blunt,shock=blunt*.5}}
+end
+function M.from_engine(target, hit, amount, shooter, bone)
+ -- Native APIs do not expose shot distance/ammo consistently; retain native damage as
+ -- the fallback and only replace it when an explicit ammo section can be resolved.
+ local ammo_id = active_ammo(shooter)
+ if not ammo_id then return nil end
+ local distance = 0
+ if target and shooter and target.position and shooter.position then
+  local a,b=target:position(),shooter:position(); if a and b then distance=a:distance_to(b) end
+ end
+ return M.calculate({weapon_id=section(shooter),ammo_id=ammo_id,distance_m=distance,hit_zone=zones.normalize(bone),armor_resistance=0})
+end
+return M

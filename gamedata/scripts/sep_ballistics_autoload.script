@@ -1,0 +1,2 @@
+local main = require("sep_ballistics_main")
+function on_game_start() main.on_game_start() end

@@ -13,6 +13,11 @@ the Sephellive workshop. BaS is excluded.
 | 7.62x54R | `wpn_svd` | 10/150/350 m | none/light/plate |
 | 12ga buck/slug | `wpn_spas12` | 5/25/75 m | none/light/plate |
 
+The Workshop provisions these exact representative sections with the matching
+vanilla ammo sections on Fake Start. They are referenced by the installed MRAA
+v1.4.6 DLTX, so the test exercises the active MRAA configuration without adding
+per-weapon ballistic profiles.
+
 For each row record weapon section, ammo section, distance, target armour, hit
 zone, impact velocity/energy, penetration state, terminal result, and BHS limb
 result. Results are intentionally not fabricated.

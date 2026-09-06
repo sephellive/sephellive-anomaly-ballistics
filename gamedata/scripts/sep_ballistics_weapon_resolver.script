@@ -2,10 +2,10 @@
 local cache = {}
 
 local function list_for(section)
-    if cache[section] then return cache[section] end
+    if cache[section] ~= nil then return cache[section] or nil end
     local list = parse_list and parse_list(ini_sys, section, "ammo_class") or nil
     cache[section] = list or false
-    return list
+    return cache[section] or nil
 end
 
 function resolve_weapon(shooter)

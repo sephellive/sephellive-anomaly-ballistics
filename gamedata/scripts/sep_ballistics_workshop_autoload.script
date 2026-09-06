@@ -272,6 +272,18 @@ local function report_hit(obj, amount, who, bone_index)
     refresh_marker(obj)
 end
 
+local function emit_probe_telemetry(obj, amount, who, bone_index)
+    local core = sep_ballistics_core
+    local debug = sep_ballistics_debug
+    if not core or type(core.from_engine) ~= "function" or not debug or type(debug.emit) ~= "function" then
+        return
+    end
+    local result = core.from_engine(obj, nil, amount, who, bone_index)
+    if result then
+        debug.emit(result)
+    end
+end
+
 local function actor_on_first_update()
     spawn_dummy_if_needed()
 end
@@ -291,6 +303,7 @@ end
 
 local function npc_on_hit_callback(obj, amount, local_direction, who, bone_index)
     report_hit(obj, amount, who, bone_index)
+    emit_probe_telemetry(obj, amount, who, bone_index)
 end
 
 local function monster_on_before_hit(obj, hit, amount, flags)

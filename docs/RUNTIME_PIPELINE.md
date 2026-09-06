@@ -39,3 +39,11 @@ post-lethal/respawn wrapper may be added only after the callback order is proven
 slot (12), current item condition and `GetBoneArmor(bone_id)` from the engine
 objects. The raw engine resistance is emitted unchanged with its source and bone;
 no durability/degradation or armour coefficient is applied in the probe.
+
+## Bone mapping source
+
+The zone map is aligned with the installed BHS Reworked 0.4 `hitboxes` table:
+bones 14–19 map to HEAD and bones 2, 11–13, 20 and 33 map to TORSO. The executed
+Workshop hits confirmed bone 12 as TORSO and bone 15 as HEAD. Unknown bone ids
+now emit one warning and deliberately fall back to TORSO rather than silently
+claiming precise limb data.

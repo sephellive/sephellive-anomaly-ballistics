@@ -4,4 +4,8 @@ local workshop = require("sep_ballistics_workshop_autoload")
 function on_game_start()
     main.on_game_start()
     workshop.register()
+    if sep_ballistics_workshop_requested then
+        workshop.request_launch()
+        sep_ballistics_workshop_requested = nil
+    end
 end

@@ -1,16 +1,27 @@
 -- P0 probe mode: custom damage is disabled until live telemetry proves all inputs.
 local pending_actor_hits = {}
 function actor_on_before_hit(s_hit, bone)
- local core, debug = sep_ballistics_core, sep_ballistics_debug
- if not core or not debug then return end
+ local core = sep_ballistics_core
+ if not core then return end
  local draft = s_hit and s_hit.draftsman
  local result = core.from_engine(db and db.actor, s_hit, s_hit and s_hit.power, draft, bone)
- if result then pending_actor_hits[#pending_actor_hits + 1] = result; debug.emit(result) end
+ if result then pending_actor_hits[#pending_actor_hits + 1] = result end
 end
 function actor_on_update()
- -- Queue is deliberately retained and drained to prove rapid-hit handling.
- -- Do not suppress native damage or call BHS until the probe confirms every input.
- for i = #pending_actor_hits, 1, -1 do table.remove(pending_actor_hits, i) end
+ -- FIFO: every valid hit is processed exactly once; no single pending-hit slot
+ -- can overwrite automatic-fire or shotgun events between updates.
+ local debug, bhs = sep_ballistics_debug, sep_ballistics_bhs_adapter
+ while #pending_actor_hits > 0 do
+  local result = table.remove(pending_actor_hits, 1)
+  local applied, reason = false, "BHS adapter unavailable"
+  if bhs and type(bhs.apply) == "function" then
+   applied, reason = bhs.apply(result, result.hit_zone)
+  end
+  result.sink = applied and "BHS" or "native_fallback"
+  result.runtime = result.runtime or {}
+  result.runtime.sink_reason = reason
+  if debug and type(debug.emit) == "function" then debug.emit(result) end
+ end
 end
 function npc_on_before_hit(obj, hit, bone_id, flags)
  local core, debug = sep_ballistics_core, sep_ballistics_debug

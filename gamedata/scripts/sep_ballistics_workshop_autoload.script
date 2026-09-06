@@ -5,8 +5,8 @@ local WORKSHOP = {
     button_name = "btn_sep_ballistics_workshop",
     button_caption = "sep_ballistics_workshop_menu",
     target_level = "fake_start",
-    target_section = "sep_ballistics_workshop_dummy",
-    target_story = "sep_ballistics_workshop_dummy",
+    -- P0 probe uses a stock section so it never depends on a custom spawn LTX.
+    target_section = "sim_default_stalker_0",
     marker_ttl = 2000,
 }
 
@@ -157,13 +157,6 @@ local function spawn_dummy_if_needed()
         return
     end
 
-    if target_object() then
-        state.dummy_spawned = true
-        state.launch_requested = false
-        push_news("sep_ballistics_workshop_news_title", game.translate_string("sep_ballistics_workshop_news_spawned"))
-        return
-    end
-
     local actor = safe_actor()
     if not actor or not alife() then
         return
@@ -183,11 +176,9 @@ local function spawn_dummy_if_needed()
         target_pos:add(direction:mul(8))
     end
     alife():create(WORKSHOP.target_section, target_pos, actor:level_vertex_id(), actor:game_vertex_id())
-    if get_story_se_object(WORKSHOP.target_story) then
-        state.dummy_spawned = true
-        state.launch_requested = false
-        push_news("sep_ballistics_workshop_news_title", game.translate_string("sep_ballistics_workshop_news_spawned"))
-    end
+    state.dummy_spawned = true
+    state.launch_requested = false
+    push_news("sep_ballistics_workshop_news_title", game.translate_string("sep_ballistics_workshop_news_spawned"))
 end
 
 local function on_test_fake_start_clicked(menu)

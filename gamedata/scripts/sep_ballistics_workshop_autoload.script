@@ -295,6 +295,10 @@ local function emit_probe_telemetry(obj, amount, who, bone_index)
     end
     local result = core.from_engine(obj, nil, amount, who, bone_index)
     if result then
+        local sink = sep_ballistics_sink
+        if sink and type(sink.deliver_npc) == "function" then
+            result.sink = sink.deliver_npc(obj, result)
+        end
         debug.emit(result)
     end
 end

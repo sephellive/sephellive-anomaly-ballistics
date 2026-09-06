@@ -10,14 +10,14 @@ end
 function actor_on_update()
  -- FIFO: every valid hit is processed exactly once; no single pending-hit slot
  -- can overwrite automatic-fire or shotgun events between updates.
- local debug, bhs = sep_ballistics_debug, sep_ballistics_bhs_adapter
+ local debug, sink = sep_ballistics_debug, sep_ballistics_sink
  while #pending_actor_hits > 0 do
   local result = table.remove(pending_actor_hits, 1)
-  local applied, reason = false, "BHS adapter unavailable"
-  if bhs and type(bhs.apply) == "function" then
-   applied, reason = bhs.apply(result, result.hit_zone)
+  local mode, reason = "native_fallback", "sink unavailable"
+  if sink and type(sink.deliver_actor) == "function" then
+   mode, reason = sink.deliver_actor(result)
   end
-  result.sink = applied and "BHS" or "native_fallback"
+  result.sink = mode
   result.runtime = result.runtime or {}
   result.runtime.sink_reason = reason
   if debug and type(debug.emit) == "function" then debug.emit(result) end

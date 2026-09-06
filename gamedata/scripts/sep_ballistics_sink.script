@@ -1,0 +1,21 @@
+-- Central safe-delivery contract. The calculation has already completed before
+-- this module is called; sinks must never repeat terminal ballistics.
+function deliver_actor(result)
+    local bhs = sep_ballistics_bhs_adapter
+    if bhs and type(bhs.apply) == "function" then
+        local applied, reason = bhs.apply(result, result.hit_zone)
+        if applied then return "BHS", reason end
+        return "native_fallback", reason
+    end
+    return "native_fallback", "BHS adapter unavailable"
+end
+
+function deliver_npc(target, result)
+    local npc = sep_ballistics_npc_adapter
+    if npc and type(npc.apply) == "function" then
+        local applied, reason = npc.apply(target, result)
+        if applied then return "NPC engine", reason end
+        return "native_fallback", reason
+    end
+    return "native_fallback", "NPC adapter unavailable"
+end

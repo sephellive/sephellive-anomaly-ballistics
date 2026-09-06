@@ -14,6 +14,12 @@ native damage is zeroed but custom BHS delivery fails.
 The NPC adapter follows the same rule: it receives a `HitResult` contract but
 does not alter engine hit power until a safe callback chain is proven.
 
+`sep_ballistics_sink.script` is the only delivery dispatcher. It routes actor
+results to the BHS adapter and NPC results to the NPC adapter, then returns a
+named sink mode. Both current adapters return `native_fallback`; this makes the
+fallback visible in telemetry and prevents a later caller from accidentally
+zeroing native damage before custom delivery is guaranteed.
+
 The installed callback dispatcher supports multiple registrations, but the
 current in-game proof is `npc_on_hit_callback` after the native hit. That is
 appropriate for telemetry but too late to replace engine damage, so NPC custom

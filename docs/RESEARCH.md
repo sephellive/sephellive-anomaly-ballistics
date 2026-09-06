@@ -12,6 +12,10 @@
   mutates actor health; it is not enabled as a production sink.
 - Existing workshop uses Modded Exes callbacks including `npc_on_before_hit` and
   `npc_on_hit_callback`.
+- Anomaly's `axr_main.callback_set` stores callbacks in a set, so registered
+  handlers do not overwrite each other. In the local runtime, the verified
+  reliable NPC source is still `npc_on_hit_callback`; pre-hit telemetry was not
+  observed despite registration and therefore is not used to suppress damage.
 
 ## Selected design
 

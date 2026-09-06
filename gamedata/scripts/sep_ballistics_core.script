@@ -5,13 +5,18 @@ function calculate(input)
  if unknown then debug.warn_unknown(input.ammo_id, input.weapon_id) end
  local velocity, energy, capability = pen.impact(profile, input.distance_m, input.muzzle_factor)
  local resistance = math.max(0, tonumber(input.armor_resistance) or 0)
- local outcome, chance, roll = pen.resolve(capability, resistance, input.rng)
- local residual = outcome == "PENETRATED" and energy * math.max(.15, 1 - resistance / math.max(capability, .01) * .5) or (outcome == "PARTIAL" and energy * .12 or 0)
- local terminal = profile.tissue * (residual / math.max(energy, .01))
- if profile.kind == "BUCKSHOT" then terminal = terminal * (profile.pellets or 1) end
+ local outcome, chance, roll, ratio, partial_chance = pen.resolve(capability, resistance, input.rng)
+ local residual_fraction = 0
+ if outcome == "PENETRATED" then
+  residual_fraction = math.min(0.95, math.max(0.12, 0.20 + 0.55 * math.min(ratio, 1.35)))
+ elseif outcome == "PARTIAL" then
+  residual_fraction = math.min(0.32, math.max(0.04, 0.05 + 0.15 * math.min(ratio, 1.5)))
+ end
+ local residual = energy * residual_fraction
+ local terminal = profile.tissue * residual_fraction * (profile.terminal_multiplier or 1)
  if outcome == "STOPPED" then terminal = 0 end
  local blunt = energy / 1000 * profile.blunt * (outcome == "PENETRATED" and .25 or 1)
- return {weapon_id=input.weapon_id or "unknown", ammo_id=input.ammo_id or "unknown", profile_id=profile_id, distance_m=math.max(0,input.distance_m or 0), hit_zone=input.hit_zone or "TORSO", impact_velocity=velocity, impact_energy=energy, armor={encountered=resistance>0,resistance=resistance,penetration_chance=chance,penetration_roll=roll,penetration_result=outcome,degradation=energy/1000*(outcome=="PENETRATED" and 1 or .4)}, projectile={residual_energy=residual,deformation=outcome=="STOPPED" and "stopped" or "deformed",fragmentation=profile.kind=="HP"},body={tissue_damage=terminal,bleeding=terminal*(profile.kind=="HP" and .8 or .35),blunt_trauma=blunt,shock=blunt*.5}}
+ return {weapon_id=input.weapon_id or "unknown", ammo_id=input.ammo_id or "unknown", profile_id=profile_id, distance_m=math.max(0,input.distance_m or 0), hit_zone=input.hit_zone or "TORSO", impact_velocity=velocity, impact_energy=energy, armor={encountered=resistance>0,resistance=resistance,penetration_chance=chance,penetration_roll=roll,penetration_ratio=ratio,partial_chance=partial_chance,penetration_result=outcome,degradation=energy/1000*(outcome=="PENETRATED" and 1 or .4)}, projectile={residual_energy=residual,residual_penetration=capability * residual_fraction,deformation_factor=1-residual_fraction,deformation=outcome=="STOPPED" and "stopped" or "deformed",fragmentation=profile.kind=="HP"},body={tissue_damage=terminal,bleeding=terminal*(profile.kind=="HP" and .85 or .35),blunt_trauma=blunt,shock=blunt*.5},sink="native_fallback"}
 end
 function from_engine(target, hit, amount, shooter, bone)
  -- Native APIs do not expose shot distance/ammo consistently; retain native damage as

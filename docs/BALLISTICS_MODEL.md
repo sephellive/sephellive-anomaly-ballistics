@@ -1,14 +1,26 @@
 # Ballistics model
 
-`ammo section -> profile -> impact state -> armour result -> terminal result -> BHS`.
+The system is cartridge-centric. Weapon sections provide the loaded ammo
+section and, later, an effective muzzle modifier; terminal values are never
+hand-authored per rifle.
 
-Profiles in `sep_ballistics_ammo.script` hold mass, nominal velocity, penetration,
-drag, retention, tissue, blunt-transfer, pellet count and projectile archetype.
-Velocity and penetration decay exponentially with distance. Armour outcomes are
-`STOPPED`, `PARTIAL`, or `PENETRATED`; the transition is a logistic probability
-curve, not a tier threshold. AP favours penetration and sacrifices tissue effect;
-buckshot aggregates pellets and is weak against armour; slugs transfer high blunt
-energy.
+## Penetration v2
 
-All tuning values live in the profile registry or shared formula module. No MRAA
-weapon receives its own terminal-damage profile.
+`ratio = impact_penetration / effective_armor_resistance` feeds two continuous
+curves: penetration rises around parity, while stopped outcome dominates below
+parity. Remaining probability becomes `PARTIAL`. Each outcome carries a
+residual-energy fraction: stopped is zero, partial is bounded low, and
+penetrated scales continuously with ratio. Armor degradation remains telemetry
+only until a safe engine adapter is validated.
+
+## Projectile archetypes
+
+- FMJ: baseline penetration and tissue effect.
+- AP: stronger penetration, lower tissue output.
+- HP: weaker armor penetration but increased tissue and bleeding after
+  successful soft-tissue penetration.
+- Buckshot: per-pellet abstraction. One hit event is one pellet; total shell
+  mass is never multiplied again by pellet count.
+- Slug: high blunt transfer and meaningful penetration.
+
+Native damage remains active until BHS/NPC sinks are proven end-to-end.

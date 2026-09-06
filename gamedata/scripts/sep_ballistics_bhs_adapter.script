@@ -1,7 +1,20 @@
-function available() return type(zzz_player_injuries) == "table" and type(zzz_player_injuries.bhs_dbg_hit) == "function" end
+function available()
+ return type(zzz_player_injuries) == "table" and type(zzz_player_injuries.bhs_dbg_hit) == "function"
+end
+
+function build_payload(result, zone)
+ return {
+  zone = zone,
+  tissue_damage = result.body.tissue_damage,
+  bleeding = result.body.bleeding,
+  blunt_trauma = result.body.blunt_trauma,
+  shock = result.body.shock,
+ }
+end
+
 function apply(result, zone)
- if not available() then return false, "BHS unavailable" end
- local damage = math.max(0.001, (result.body.tissue_damage + result.body.blunt_trauma) / 100)
- zzz_player_injuries.bhs_dbg_hit(zone, damage)
- return true
+ -- BHS Reworked 0.4 exposes bhs_dbg_hit only. It directly changes actor
+ -- health and relies on its own next-update delta path, so it is not a safe
+ -- production sink. Keep native damage until a documented public API exists.
+ return false, available() and "BHS debug API is intentionally disabled" or "BHS unavailable"
 end

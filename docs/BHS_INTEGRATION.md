@@ -1,9 +1,15 @@
 # BHS integration
 
-The adapter targets the locally installed BHS reworked 0.4. `HitResult.hit_zone`
-is normalized to `head`, `torso`, `leftarm`, `rightarm`, `leftleg`, or `rightleg`
-and passed through `zzz_player_injuries.bhs_dbg_hit`. This makes the existing BHS
-HUD update through its native update flow; Ballistics creates no body HUD.
+Installed target: BHS Reworked 0.4 (`zzz_player_injuries.script`). Its runtime
+flow chooses a limb in `actor_on_before_hit`, then derives damage from the
+change in actor health during `actor_on_update`. The only discovered direct
+mutation entry point is `bhs_dbg_hit(limb, dmg)`, which sets internal state and
+directly changes actor health.
 
-If BHS is unavailable, Ballistics does not suppress native player damage. The
-adapter is deliberately isolated because this BHS exposes no stable public API.
+That function is a debug helper, not a documented production API. Sephellive
+therefore builds a structured BHS payload but intentionally does **not** call
+the helper or suppress native damage. This prevents the forbidden state where
+native damage is zeroed but custom BHS delivery fails.
+
+The NPC adapter follows the same rule: it receives a `HitResult` contract but
+does not alter engine hit power until a safe callback chain is proven.

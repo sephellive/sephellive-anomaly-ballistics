@@ -6,9 +6,15 @@ function impact(profile, distance, muzzle_factor)
 end
 function resolve(capability, resistance, rng)
  local ratio = capability / math.max(0.01, resistance or 0)
- local chance = 1 / (1 + math.exp(-6 * (ratio - 1)))
+ -- Two curves avoid treating every failed borderline penetration as PARTIAL.
+ -- p_penetrate rises around parity; p_stop falls more slowly below parity.
+ local p_penetrate = 1 / (1 + math.exp(-5.5 * (ratio - 1.0)))
+ local p_stop = 1 / (1 + math.exp(5.0 * (ratio - 0.72)))
+ local p_partial = math.max(0, 1 - p_penetrate - p_stop)
+ local total = p_penetrate + p_stop + p_partial
+ p_penetrate, p_stop, p_partial = p_penetrate / total, p_stop / total, p_partial / total
  local roll = (rng and rng()) or math.random()
- if ratio >= 1.65 then return "PENETRATED", chance, roll end
- if ratio <= 0.40 then return "STOPPED", chance, roll end
- return roll <= chance and "PENETRATED" or "PARTIAL", chance, roll
+ if roll <= p_penetrate then return "PENETRATED", p_penetrate, roll, ratio, p_partial end
+ if roll <= p_penetrate + p_partial then return "PARTIAL", p_penetrate, roll, ratio, p_partial end
+ return "STOPPED", p_penetrate, roll, ratio, p_partial
 end

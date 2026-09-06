@@ -1,0 +1,10 @@
+-- NPC sink contract.  It accepts the same HitResult as the actor path but does
+-- not suppress engine damage until a safe pre-hit hook can be chained with all
+-- installed callbacks.
+function available()
+    return false
+end
+
+function apply(target, result)
+    return false, "NPC engine sink is not yet validated; native damage retained"
+end

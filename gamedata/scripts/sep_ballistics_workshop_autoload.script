@@ -345,4 +345,4 @@ function M.register()
     RegisterScriptCallback("load_state", load_state)
 end
 
-return M
+sep_ballistics_workshop = M

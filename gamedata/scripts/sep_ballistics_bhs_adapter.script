@@ -6,4 +6,4 @@ function M.apply(result, zone)
  zzz_player_injuries.bhs_dbg_hit(zone, damage)
  return true
 end
-return M
+sep_ballistics_bhs_adapter = M

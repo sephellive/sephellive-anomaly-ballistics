@@ -1,9 +1,3 @@
-local ammo = require("sep_ballistics_ammo")
-local pen = require("sep_ballistics_penetration")
-local zones = require("sep_ballistics_hit_zones")
-local debug = require("sep_ballistics_debug")
-local weapon_resolver = require("sep_ballistics_weapon_resolver")
-local armor_resolver = require("sep_ballistics_armor")
 local M = {}
 
 local function section(obj)
@@ -11,6 +5,8 @@ local function section(obj)
  return "unknown"
 end
 function M.calculate(input)
+ local ammo, pen, debug = sep_ballistics_ammo, sep_ballistics_penetration, sep_ballistics_debug
+ if not ammo or not pen or not debug then return nil, "ballistics modules unavailable" end
  local profile, profile_id, unknown = ammo.resolve(input.ammo_id)
  if unknown then debug.warn_unknown(input.ammo_id, input.weapon_id) end
  local velocity, energy, capability = pen.impact(profile, input.distance_m, input.muzzle_factor)
@@ -26,6 +22,8 @@ end
 function M.from_engine(target, hit, amount, shooter, bone)
  -- Native APIs do not expose shot distance/ammo consistently; retain native damage as
  -- the fallback and only replace it when an explicit ammo section can be resolved.
+ local weapon_resolver, zones, armor_resolver = sep_ballistics_weapon_resolver, sep_ballistics_hit_zones, sep_ballistics_armor
+ if not weapon_resolver or not zones or not armor_resolver then return nil, "ballistics modules unavailable" end
  local weapon_data, reason = weapon_resolver.resolve_weapon(shooter)
  if not weapon_data then return nil, reason end
  local distance = 0
@@ -37,8 +35,9 @@ function M.from_engine(target, hit, amount, shooter, bone)
  -- Probe pass intentionally does not apply weapon speed or armour to damage. Both
  -- values are captured first and must be proven through a live game log.
  local result = M.calculate({weapon_id=weapon_data.weapon_section,ammo_id=weapon_data.ammo_section,distance_m=distance,hit_zone=hit_zone,armor_resistance=armor.resistance})
+ if not result then return nil, "ballistics calculation unavailable" end
  result.armor.source, result.armor.durability, result.armor.material, result.armor.bone_id = armor.source, armor.durability, armor.material, armor.bone_id
  result.runtime = {ammo_index=weapon_data.ammo_index, weapon_bullet_speed=weapon_data.bullet_speed, resolver_reason=reason, armor_source=armor.source}
  return result
 end
-return M
+sep_ballistics_core = M

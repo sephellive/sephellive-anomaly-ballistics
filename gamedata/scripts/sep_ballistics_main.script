@@ -1,11 +1,9 @@
-local core = require("sep_ballistics_core")
-local zones = require("sep_ballistics_hit_zones")
-local bhs = require("sep_ballistics_bhs_adapter")
-local debug = require("sep_ballistics_debug")
 local M = {}
 -- P0 probe mode: custom damage is disabled until live telemetry proves all inputs.
 local pending_actor_hits = {}
 function M.actor_on_before_hit(s_hit, bone)
+ local core, debug = sep_ballistics_core, sep_ballistics_debug
+ if not core or not debug then return end
  local draft = s_hit and s_hit.draftsman
  local result = core.from_engine(db and db.actor, s_hit, s_hit and s_hit.power, draft, bone)
  if result then pending_actor_hits[#pending_actor_hits + 1] = result; debug.emit(result) end
@@ -16,6 +14,8 @@ function M.actor_on_update()
  for i = #pending_actor_hits, 1, -1 do table.remove(pending_actor_hits, i) end
 end
 function M.npc_on_before_hit(obj, hit, bone_id, flags)
+ local core, debug = sep_ballistics_core, sep_ballistics_debug
+ if not core or not debug then return false end
  local r=core.from_engine(obj,hit,bone_id,hit and hit.draftsman,bone_id)
  if r then
   debug.emit(r)
@@ -27,4 +27,4 @@ function M.on_game_start()
  RegisterScriptCallback("actor_on_update", M.actor_on_update)
  RegisterScriptCallback("npc_on_before_hit", M.npc_on_before_hit)
 end
-return M
+sep_ballistics_main = M

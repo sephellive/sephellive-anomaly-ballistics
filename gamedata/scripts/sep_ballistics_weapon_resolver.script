@@ -21,4 +21,4 @@ function M.resolve_weapon(shooter)
     return {weapon=weapon, weapon_section=weapon_section, ammo_section=ammo_section, ammo_index=ammo_index, bullet_speed=speed}
 end
 
-return M
+sep_ballistics_weapon_resolver = M

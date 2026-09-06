@@ -32,4 +32,4 @@ function M.resolve(section)
  local id = exact[key]
  return profiles[id] or fallback, id or "fallback", not id
 end
-return M
+sep_ballistics_ammo = M

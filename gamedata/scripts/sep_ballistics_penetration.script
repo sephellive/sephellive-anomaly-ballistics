@@ -13,4 +13,4 @@ function M.resolve(capability, resistance, rng)
  if ratio <= 0.40 then return "STOPPED", chance, roll end
  return roll <= chance and "PENETRATED" or "PARTIAL", chance, roll
 end
-return M
+sep_ballistics_penetration = M

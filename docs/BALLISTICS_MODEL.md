@@ -18,6 +18,8 @@ only until a safe engine adapter is validated.
 
 - FMJ: baseline penetration and tissue effect.
 - AP: stronger penetration, lower tissue output.
+- Enhanced FMJ/steel-core loads (for example 5.45 EP and 5.56 SS190) sit
+  between FMJ and AP rather than borrowing either profile wholesale.
 - HP: weaker armor penetration but increased tissue and bleeding after
   successful soft-tissue penetration.
 - Buckshot: per-pellet abstraction. One hit event is one pellet; total shell

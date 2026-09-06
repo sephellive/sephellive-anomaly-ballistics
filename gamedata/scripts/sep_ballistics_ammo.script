@@ -7,8 +7,10 @@ local profiles = {
     ["45_fmj"] = {caliber=".45 ACP", mass_g=14.9, muzzle_velocity=255, penetration=17, retention=0.0020, drag=0.0022, tissue=19, blunt=0.16, kind="FMJ"},
     ["45_hp"] = {caliber=".45 ACP", mass_g=10.7, muzzle_velocity=300, penetration=11, retention=0.0022, drag=0.0023, tissue=22, terminal_multiplier=1.40, blunt=0.17, kind="HP"},
     ["545_fmj"] = {caliber="5.45x39", mass_g=3.4, muzzle_velocity=880, penetration=38, retention=0.0011, drag=0.0014, tissue=26, blunt=0.08, kind="FMJ"},
+    ["545_ep"] = {caliber="5.45x39", mass_g=3.4, muzzle_velocity=890, penetration=45, retention=0.0010, drag=0.0013, tissue=24, blunt=0.07, kind="FMJ"},
     ["545_ap"] = {caliber="5.45x39", mass_g=3.6, muzzle_velocity=890, penetration=52, retention=0.0008, drag=0.0012, tissue=20, blunt=0.06, kind="AP"},
     ["556_fmj"] = {caliber="5.56x45", mass_g=4.0, muzzle_velocity=910, penetration=43, retention=0.0010, drag=0.0013, tissue=28, blunt=0.08, kind="FMJ"},
+    ["556_ss190"] = {caliber="5.56x45", mass_g=4.0, muzzle_velocity=915, penetration=50, retention=0.0009, drag=0.0012, tissue=26, blunt=0.07, kind="FMJ"},
     ["556_ap"] = {caliber="5.56x45", mass_g=4.0, muzzle_velocity=930, penetration=58, retention=0.0007, drag=0.0011, tissue=21, blunt=0.06, kind="AP"},
     ["76239_fmj"] = {caliber="7.62x39", mass_g=8.0, muzzle_velocity=715, penetration=42, retention=0.0012, drag=0.0015, tissue=32, blunt=0.12, kind="FMJ"},
     ["76239_ap"] = {caliber="7.62x39", mass_g=7.9, muzzle_velocity=730, penetration=58, retention=0.0008, drag=0.0012, tissue=24, blunt=0.09, kind="AP"},
@@ -24,16 +26,21 @@ local profiles = {
 local exact = {
  ["ammo_9x19_fmj"]="9x19_fmj", ["ammo_9x19_pbp"]="9x19_hp", ["ammo_9x19_ap"]="9x19_ap",
  ["ammo_11.43x23_fmj"]="45_fmj", ["ammo_11.43x23_hydro"]="45_hp",
- ["ammo_5.45x39_fmj"]="545_fmj", ["ammo_5.45x39_ep"]="545_fmj", ["ammo_5.45x39_ap"]="545_ap",
- ["ammo_5.56x45_fmj"]="556_fmj", ["ammo_5.56x45_ss190"]="556_ap", ["ammo_5.56x45_ap"]="556_ap",
+ ["ammo_5.45x39_fmj"]="545_fmj", ["ammo_5.45x39_ep"]="545_ep", ["ammo_5.45x39_ap"]="545_ap",
+ ["ammo_5.56x45_fmj"]="556_fmj", ["ammo_5.56x45_ss190"]="556_ss190", ["ammo_5.56x45_ap"]="556_ap",
  ["ammo_7.62x39_fmj"]="76239_fmj", ["ammo_7.62x39_ap"]="76239_ap",
  ["ammo_7.62x51_fmj"]="76251_fmj", ["ammo_7.62x51_ap"]="76251_ap",
  ["ammo_7.62x54_7h1"]="76254_fmj", ["ammo_7.62x54_7h14"]="76254_ap", ["ammo_7.62x54_ap"]="76254_ap",
  ["ammo_12x70_buck"]="12_buck", ["ammo_12x70_buck_self"]="12_buck", ["ammo_12x76_zhekan"]="12_slug", ["ammo_12x76_dart"]="12_slug", ["ammo_12x76_bull"]="12_slug",
 }
 local fallback = {caliber="unknown", mass_g=7, muzzle_velocity=400, penetration=18, retention=0.002, drag=0.002, tissue=15, blunt=0.1, kind="FALLBACK"}
+local resolved = {}
 function resolve(section)
  local key = tostring(section or ""):lower():gsub("_verybad$", ""):gsub("_bad$", "")
+ local cached = resolved[key]
+ if cached then return cached.profile, cached.id, cached.unknown end
  local id = exact[key]
- return profiles[id] or fallback, id or "fallback", not id
+ local record = {profile=profiles[id] or fallback, id=id or "fallback", unknown=not id}
+ resolved[key] = record
+ return record.profile, record.id, record.unknown
 end

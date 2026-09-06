@@ -3,6 +3,7 @@ local pen = require("sep_ballistics_penetration")
 local zones = require("sep_ballistics_hit_zones")
 local debug = require("sep_ballistics_debug")
 local weapon_resolver = require("sep_ballistics_weapon_resolver")
+local armor_resolver = require("sep_ballistics_armor")
 local M = {}
 
 local function section(obj)
@@ -31,11 +32,13 @@ function M.from_engine(target, hit, amount, shooter, bone)
  if target and shooter and target.position and shooter.position then
   local a,b=target:position(),shooter:position(); if a and b then distance=a:distance_to(b) end
  end
- local muzzle_factor = weapon_data.bullet_speed and weapon_data.bullet_speed / 1 or 1
- -- Probe pass intentionally does not use this value for balancing. It is included
- -- in telemetry so the effective merged weapon value can be verified in-game.
- local result = M.calculate({weapon_id=weapon_data.weapon_section,ammo_id=weapon_data.ammo_section,distance_m=distance,hit_zone=zones.normalize(bone),armor_resistance=0})
- result.runtime = {ammo_index=weapon_data.ammo_index, weapon_bullet_speed=weapon_data.bullet_speed, resolver_reason=reason}
+ local hit_zone = zones.normalize(bone)
+ local armor = armor_resolver.resolve(target, hit_zone, bone)
+ -- Probe pass intentionally does not apply weapon speed or armour to damage. Both
+ -- values are captured first and must be proven through a live game log.
+ local result = M.calculate({weapon_id=weapon_data.weapon_section,ammo_id=weapon_data.ammo_section,distance_m=distance,hit_zone=hit_zone,armor_resistance=armor.resistance})
+ result.armor.source, result.armor.durability, result.armor.material, result.armor.bone_id = armor.source, armor.durability, armor.material, armor.bone_id
+ result.runtime = {ammo_index=weapon_data.ammo_index, weapon_bullet_speed=weapon_data.bullet_speed, resolver_reason=reason, armor_source=armor.source}
  return result
 end
 return M

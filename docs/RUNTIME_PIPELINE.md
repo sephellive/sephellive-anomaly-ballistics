@@ -28,3 +28,8 @@ No cartridge values are balanced or changed in this probe pass.
 The workshop dummy is deliberately non-immortal during this probe. Its former
 pre-hit `power = 0` behaviour bypassed the very pipeline being validated. A safe
 post-lethal/respawn wrapper may be added only after the callback order is proven.
+
+`sep_ballistics_armor` is read-only. It reads the target's outfit slot (7), helmet
+slot (12), current item condition and `GetBoneArmor(bone_id)` from the engine
+objects. The raw engine resistance is emitted unchanged with its source and bone;
+no durability/degradation or armour coefficient is applied in the probe.

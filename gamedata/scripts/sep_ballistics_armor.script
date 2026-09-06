@@ -1,0 +1,50 @@
+-- Read-only armour resolver. No condition mutation or synthetic durability is used.
+local M = {}
+
+local function invoke(object, method, ...)
+    if not object or type(object[method]) ~= "function" then return nil end
+    local ok, value = pcall(object[method], object, ...)
+    return ok and value or nil
+end
+
+local function equipped(target, slot, fallback)
+    local item = invoke(target, "item_in_slot", slot)
+    if not item and fallback then item = invoke(target, "get_current_outfit") end
+    return item
+end
+
+local function bone_resistance(item, cast_method, bone_id)
+    local cast = invoke(item, cast_method)
+    local raw = cast and invoke(cast, "GetBoneArmor", bone_id) or nil
+    if type(raw) ~= "number" then return 0 end
+    local condition = invoke(item, "condition")
+    return raw * (type(condition) == "number" and condition or 1)
+end
+
+function M.resolve(target, zone, bone_id)
+    local outfit = equipped(target, 7, true)
+    local helmet = equipped(target, 12, false)
+    local resistance = bone_resistance(outfit, "cast_CustomOutfit", bone_id)
+    local source = resistance > 0 and "outfit" or "none"
+
+    if zone == "HEAD" then
+        local helmet_resistance = bone_resistance(helmet, "cast_Helmet", bone_id)
+        if helmet_resistance > 0 then
+            resistance = resistance + helmet_resistance
+            source = source == "outfit" and "outfit+helmet" or "helmet"
+        end
+    end
+
+    return {
+        encountered = resistance > 0,
+        source = source,
+        zone = zone,
+        resistance = resistance,
+        durability = outfit and invoke(outfit, "condition") or nil,
+        helmet_durability = helmet and invoke(helmet, "condition") or nil,
+        material = "engine_bone_armor",
+        bone_id = bone_id,
+    }
+end
+
+return M

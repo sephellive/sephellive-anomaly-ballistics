@@ -225,7 +225,10 @@ local function emit_probe_telemetry(obj, amount, who, bone_index)
     if result then
         local sink = sep_ballistics_sink
         if sink and type(sink.deliver_npc) == "function" then
-            result.sink = sink.deliver_npc(obj, result)
+            local mode, reason = sink.deliver_npc(obj, result)
+            result.sink = mode
+            result.runtime = result.runtime or {}
+            result.runtime.sink_reason = reason
         end
         debug.emit(result)
     end

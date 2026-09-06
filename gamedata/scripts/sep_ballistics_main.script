@@ -1,19 +1,18 @@
-local M = {}
 -- P0 probe mode: custom damage is disabled until live telemetry proves all inputs.
 local pending_actor_hits = {}
-function M.actor_on_before_hit(s_hit, bone)
+function actor_on_before_hit(s_hit, bone)
  local core, debug = sep_ballistics_core, sep_ballistics_debug
  if not core or not debug then return end
  local draft = s_hit and s_hit.draftsman
  local result = core.from_engine(db and db.actor, s_hit, s_hit and s_hit.power, draft, bone)
  if result then pending_actor_hits[#pending_actor_hits + 1] = result; debug.emit(result) end
 end
-function M.actor_on_update()
+function actor_on_update()
  -- Queue is deliberately retained and drained to prove rapid-hit handling.
  -- Do not suppress native damage or call BHS until the probe confirms every input.
  for i = #pending_actor_hits, 1, -1 do table.remove(pending_actor_hits, i) end
 end
-function M.npc_on_before_hit(obj, hit, bone_id, flags)
+function npc_on_before_hit(obj, hit, bone_id, flags)
  local core, debug = sep_ballistics_core, sep_ballistics_debug
  if not core or not debug then return false end
  local r=core.from_engine(obj,hit,bone_id,hit and hit.draftsman,bone_id)
@@ -22,9 +21,8 @@ function M.npc_on_before_hit(obj, hit, bone_id, flags)
  end
  return false
 end
-function M.on_game_start()
- RegisterScriptCallback("actor_on_before_hit", M.actor_on_before_hit)
- RegisterScriptCallback("actor_on_update", M.actor_on_update)
- RegisterScriptCallback("npc_on_before_hit", M.npc_on_before_hit)
+function on_game_start()
+ RegisterScriptCallback("actor_on_before_hit", actor_on_before_hit)
+ RegisterScriptCallback("actor_on_update", actor_on_update)
+ RegisterScriptCallback("npc_on_before_hit", npc_on_before_hit)
 end
-sep_ballistics_main = M

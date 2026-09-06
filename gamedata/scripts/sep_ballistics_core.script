@@ -1,10 +1,4 @@
-local M = {}
-
-local function section(obj)
- if obj and type(obj.section) == "function" then return obj:section() end
- return "unknown"
-end
-function M.calculate(input)
+function calculate(input)
  local ammo, pen, debug = sep_ballistics_ammo, sep_ballistics_penetration, sep_ballistics_debug
  if not ammo or not pen or not debug then return nil, "ballistics modules unavailable" end
  local profile, profile_id, unknown = ammo.resolve(input.ammo_id)
@@ -19,7 +13,7 @@ function M.calculate(input)
  local blunt = energy / 1000 * profile.blunt * (outcome == "PENETRATED" and .25 or 1)
  return {weapon_id=input.weapon_id or "unknown", ammo_id=input.ammo_id or "unknown", profile_id=profile_id, distance_m=math.max(0,input.distance_m or 0), hit_zone=input.hit_zone or "TORSO", impact_velocity=velocity, impact_energy=energy, armor={encountered=resistance>0,resistance=resistance,penetration_chance=chance,penetration_roll=roll,penetration_result=outcome,degradation=energy/1000*(outcome=="PENETRATED" and 1 or .4)}, projectile={residual_energy=residual,deformation=outcome=="STOPPED" and "stopped" or "deformed",fragmentation=profile.kind=="HP"},body={tissue_damage=terminal,bleeding=terminal*(profile.kind=="HP" and .8 or .35),blunt_trauma=blunt,shock=blunt*.5}}
 end
-function M.from_engine(target, hit, amount, shooter, bone)
+function from_engine(target, hit, amount, shooter, bone)
  -- Native APIs do not expose shot distance/ammo consistently; retain native damage as
  -- the fallback and only replace it when an explicit ammo section can be resolved.
  local weapon_resolver, zones, armor_resolver = sep_ballistics_weapon_resolver, sep_ballistics_hit_zones, sep_ballistics_armor
@@ -34,10 +28,9 @@ function M.from_engine(target, hit, amount, shooter, bone)
  local armor = armor_resolver.resolve(target, hit_zone, bone)
  -- Probe pass intentionally does not apply weapon speed or armour to damage. Both
  -- values are captured first and must be proven through a live game log.
- local result = M.calculate({weapon_id=weapon_data.weapon_section,ammo_id=weapon_data.ammo_section,distance_m=distance,hit_zone=hit_zone,armor_resistance=armor.resistance})
+ local result = calculate({weapon_id=weapon_data.weapon_section,ammo_id=weapon_data.ammo_section,distance_m=distance,hit_zone=hit_zone,armor_resistance=armor.resistance})
  if not result then return nil, "ballistics calculation unavailable" end
  result.armor.source, result.armor.durability, result.armor.material, result.armor.bone_id = armor.source, armor.durability, armor.material, armor.bone_id
  result.runtime = {ammo_index=weapon_data.ammo_index, weapon_bullet_speed=weapon_data.bullet_speed, resolver_reason=reason, armor_source=armor.source}
  return result
 end
-sep_ballistics_core = M

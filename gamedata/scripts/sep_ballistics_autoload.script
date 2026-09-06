@@ -1,8 +1,2 @@
-function on_game_start()
-    if sep_ballistics_main then sep_ballistics_main.on_game_start() end
-    if sep_ballistics_workshop then sep_ballistics_workshop.register() end
-    if sep_ballistics_workshop_requested then
-        if sep_ballistics_workshop then sep_ballistics_workshop.request_launch() end
-        sep_ballistics_workshop_requested = nil
-    end
-end
+-- Runtime callbacks are registered by their owning scripts.  This file is
+-- deliberately retained only as a harmless compatibility marker.

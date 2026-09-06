@@ -1,14 +1,14 @@
 -- Runtime resolver. get_ammo_type() is a zero-based index, never an ammo section.
-local M = { cache = {} }
+local cache = {}
 
 local function list_for(section)
-    if M.cache[section] then return M.cache[section] end
+    if cache[section] then return cache[section] end
     local list = parse_list and parse_list(ini_sys, section, "ammo_class") or nil
-    M.cache[section] = list or false
+    cache[section] = list or false
     return list
 end
 
-function M.resolve_weapon(shooter)
+function resolve_weapon(shooter)
     local weapon = shooter and type(shooter.active_item) == "function" and shooter:active_item() or nil
     if not weapon or not weapon.section then return nil, "no active weapon" end
     local weapon_section = weapon:section()
@@ -20,5 +20,3 @@ function M.resolve_weapon(shooter)
     local speed = ini_sys and ini_sys:r_float_ex(weapon_section, "bullet_speed") or nil
     return {weapon=weapon, weapon_section=weapon_section, ammo_section=ammo_section, ammo_index=ammo_index, bullet_speed=speed}
 end
-
-sep_ballistics_weapon_resolver = M

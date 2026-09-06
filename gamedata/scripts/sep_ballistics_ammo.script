@@ -1,5 +1,4 @@
 -- Central cartridge registry.  Weapon sections never own terminal-damage profiles.
-local M = {}
 
 local profiles = {
     ["9x19_fmj"] = {caliber="9x19", mass_g=7.5, muzzle_velocity=360, penetration=18, retention=0.0018, drag=0.0022, tissue=16, blunt=0.10, kind="FMJ"},
@@ -27,9 +26,8 @@ local exact = {
  ["ammo_12x70_buck"]="12_buck", ["ammo_12x70_buck_self"]="12_buck", ["ammo_12x76_zhekan"]="12_slug", ["ammo_12x76_dart"]="12_slug", ["ammo_12x76_bull"]="12_slug",
 }
 local fallback = {caliber="unknown", mass_g=7, muzzle_velocity=400, penetration=18, retention=0.002, drag=0.002, tissue=15, blunt=0.1, kind="FALLBACK"}
-function M.resolve(section)
+function resolve(section)
  local key = tostring(section or ""):lower():gsub("_verybad$", ""):gsub("_bad$", "")
  local id = exact[key]
  return profiles[id] or fallback, id or "fallback", not id
 end
-sep_ballistics_ammo = M

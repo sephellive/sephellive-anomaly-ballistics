@@ -1,12 +1,11 @@
 -- Enabled only for the P0 runtime probe branch. Turn off after captured validation.
-local M = {enabled=true, warned={}}
-function M.warn_unknown(ammo, weapon)
- local key=tostring(ammo)..":"..tostring(weapon); if M.warned[key] then return end; M.warned[key]=true
- if M.enabled then printe("! [SEP BALLISTICS] fallback ammo="..tostring(ammo).." weapon="..tostring(weapon)) end
+local enabled, warned = true, {}
+function warn_unknown(ammo, weapon)
+ local key=tostring(ammo)..":"..tostring(weapon); if warned[key] then return end; warned[key]=true
+ if enabled then printe("! [SEP BALLISTICS] fallback ammo="..tostring(ammo).." weapon="..tostring(weapon)) end
 end
-function M.emit(r)
- if not M.enabled then return end
+function emit(r)
+ if not enabled then return end
  local x=r.runtime or {}
  printf("[SEP BALLISTICS] weapon=%s ammo=%s index=%s speed=%s distance=%.1f bone=%s zone=%s armor_source=%s armor=%.3f chance=%.0f%% result=%s residual=%.0f tissue=%.1f bleed=%.1f blunt=%.1f",r.weapon_id,r.ammo_id,tostring(x.ammo_index),tostring(x.weapon_bullet_speed),r.distance_m,tostring(r.armor.bone_id),r.hit_zone,tostring(r.armor.source),r.armor.resistance,r.armor.penetration_chance*100,r.armor.penetration_result,r.projectile.residual_energy,r.body.tissue_damage,r.body.bleeding,r.body.blunt_trauma)
 end
-sep_ballistics_debug = M

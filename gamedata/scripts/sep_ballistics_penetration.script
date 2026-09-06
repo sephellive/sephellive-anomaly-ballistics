@@ -1,11 +1,10 @@
-local M = {}
-function M.impact(profile, distance, muzzle_factor)
+function impact(profile, distance, muzzle_factor)
  local d = math.max(0, tonumber(distance) or 0)
  local v = profile.muzzle_velocity * (muzzle_factor or 1) * math.exp(-(profile.drag or 0.002) * d)
  local e = 0.5 * (profile.mass_g / 1000) * v * v
  return v, e, profile.penetration * math.exp(-(profile.retention or 0.001) * d)
 end
-function M.resolve(capability, resistance, rng)
+function resolve(capability, resistance, rng)
  local ratio = capability / math.max(0.01, resistance or 0)
  local chance = 1 / (1 + math.exp(-6 * (ratio - 1)))
  local roll = (rng and rng()) or math.random()
@@ -13,4 +12,3 @@ function M.resolve(capability, resistance, rng)
  if ratio <= 0.40 then return "STOPPED", chance, roll end
  return roll <= chance and "PENETRATED" or "PARTIAL", chance, roll
 end
-sep_ballistics_penetration = M

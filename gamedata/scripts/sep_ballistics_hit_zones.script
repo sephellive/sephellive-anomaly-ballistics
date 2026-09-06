@@ -1,5 +1,3 @@
-local M = {}
 local map = {[14]="HEAD",[15]="HEAD",[16]="HEAD",[17]="HEAD",[18]="HEAD",[19]="HEAD",[2]="TORSO",[11]="TORSO",[12]="TORSO",[13]="TORSO",[20]="TORSO",[33]="TORSO",[21]="LEFT_ARM",[22]="LEFT_ARM",[23]="LEFT_ARM",[24]="LEFT_ARM",[25]="LEFT_ARM",[26]="LEFT_ARM",[27]="LEFT_ARM",[28]="LEFT_ARM",[29]="LEFT_ARM",[30]="LEFT_ARM",[31]="LEFT_ARM",[32]="LEFT_ARM",[34]="RIGHT_ARM",[35]="RIGHT_ARM",[36]="RIGHT_ARM",[37]="RIGHT_ARM",[38]="RIGHT_ARM",[39]="RIGHT_ARM",[40]="RIGHT_ARM",[41]="RIGHT_ARM",[42]="RIGHT_ARM",[43]="RIGHT_ARM",[44]="RIGHT_ARM",[45]="RIGHT_ARM",[3]="LEFT_LEG",[4]="LEFT_LEG",[5]="LEFT_LEG",[6]="LEFT_LEG",[7]="RIGHT_LEG",[8]="RIGHT_LEG",[9]="RIGHT_LEG",[10]="RIGHT_LEG"}
-function M.normalize(bone) return map[tonumber(bone)] or "TORSO" end
-function M.bhs(zone) return ({HEAD="head",TORSO="torso",LEFT_ARM="leftarm",RIGHT_ARM="rightarm",LEFT_LEG="leftleg",RIGHT_LEG="rightleg"})[zone] or "torso" end
-sep_ballistics_hit_zones = M
+function normalize(bone) return map[tonumber(bone)] or "TORSO" end
+function bhs(zone) return ({HEAD="head",TORSO="torso",LEFT_ARM="leftarm",RIGHT_ARM="rightarm",LEFT_LEG="leftleg",RIGHT_LEG="rightleg"})[zone] or "torso" end

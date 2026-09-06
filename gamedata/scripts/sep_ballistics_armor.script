@@ -1,5 +1,4 @@
 -- Read-only armour resolver. No condition mutation or synthetic durability is used.
-local M = {}
 
 local function invoke(object, method, ...)
     if not object or type(object[method]) ~= "function" then return nil end
@@ -21,7 +20,7 @@ local function bone_resistance(item, cast_method, bone_id)
     return raw * (type(condition) == "number" and condition or 1)
 end
 
-function M.resolve(target, zone, bone_id)
+function resolve(target, zone, bone_id)
     local outfit = equipped(target, 7, true)
     local helmet = equipped(target, 12, false)
     local resistance = bone_resistance(outfit, "cast_CustomOutfit", bone_id)
@@ -46,5 +45,3 @@ function M.resolve(target, zone, bone_id)
         bone_id = bone_id,
     }
 end
-
-sep_ballistics_armor = M

@@ -1,9 +1,7 @@
-local M = {}
-function M.available() return type(zzz_player_injuries) == "table" and type(zzz_player_injuries.bhs_dbg_hit) == "function" end
-function M.apply(result, zone)
- if not M.available() then return false, "BHS unavailable" end
+function available() return type(zzz_player_injuries) == "table" and type(zzz_player_injuries.bhs_dbg_hit) == "function" end
+function apply(result, zone)
+ if not available() then return false, "BHS unavailable" end
  local damage = math.max(0.001, (result.body.tissue_damage + result.body.blunt_trauma) / 100)
  zzz_player_injuries.bhs_dbg_hit(zone, damage)
  return true
 end
-sep_ballistics_bhs_adapter = M

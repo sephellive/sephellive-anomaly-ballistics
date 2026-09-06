@@ -10,8 +10,6 @@ local WORKSHOP = {
     marker_ttl = 2000,
 }
 
-local M = {}
-
 local state = {
     launch_requested = false,
     dummy_spawned = false,
@@ -20,7 +18,7 @@ local state = {
     markers = {},
 }
 
-function M.request_launch()
+function request_launch()
     state.launch_requested = true
     state.dummy_spawned = false
     state.loadout_granted = false
@@ -333,7 +331,7 @@ local function load_state(m_data)
     state.warned_level = saved.warned_level and true or false
 end
 
-function M.register()
+function on_game_start()
     RegisterScriptCallback("actor_on_first_update", actor_on_first_update)
     RegisterScriptCallback("actor_on_update", actor_on_update)
     RegisterScriptCallback("on_game_load", on_game_load)
@@ -344,5 +342,3 @@ function M.register()
     RegisterScriptCallback("save_state", save_state)
     RegisterScriptCallback("load_state", load_state)
 end
-
-sep_ballistics_workshop = M

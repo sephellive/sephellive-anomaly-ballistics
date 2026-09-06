@@ -37,6 +37,25 @@ This proves the active-weapon, loaded-ammo, distance, NPC bone and unarmoured
 resolver paths. A positive armour-resistance case remains required before a
 damage sink can be enabled.
 
+## Additional live telemetry — 2026-09-06
+
+The follow-up session against several live NPCs recorded the following real
+inputs. All observed targets still resolved as unarmoured, so this expands
+weapon/ammo/bone coverage but does not satisfy the positive-armour gate.
+
+| Weapon | Ammo | Distance | Bone / zone | Armour | Result |
+| --- | --- | ---: | --- | --- | --- |
+| `wpn_mp5` | `ammo_9x19_fmj` | 7.2 m | 12 / TORSO | none / 0.000 | PENETRATED |
+| `wpn_mp5` | `ammo_9x19_fmj` | 5.7 m | 15 / HEAD | none / 0.000 | PENETRATED |
+| `wpn_ak74` | `ammo_5.45x39_fmj` | 7.7 m | 30 / LEFT_ARM | none / 0.000 | PENETRATED |
+| `wpn_ak74` | `ammo_5.45x39_fmj` | 9.0 m | 20 / TORSO | none / 0.000 | PENETRATED |
+| `wpn_ak74` | `ammo_5.45x39_fmj` | 7.2 m | 2 / TORSO | none / 0.000 | PENETRATED |
+| `wpn_mp7` | `ammo_9x19_fmj` | 0.9 m | 15 / HEAD | none / 0.000 | PENETRATED |
+
+The engine also emits `npc_on_hit_callback` with `bone=from_death_callback`
+when a target dies. The Workshop now ignores that non-impact marker, preventing
+it from being incorrectly recorded as a torso ballistic hit.
+
 ## Final in-game execution checklist
 
 Use the Workshop loadout on Fake Start. For every row, fire at the same target

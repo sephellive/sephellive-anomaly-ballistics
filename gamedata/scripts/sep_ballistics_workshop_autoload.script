@@ -216,6 +216,11 @@ local function report_hit(obj, amount, who, bone_index)
 end
 
 local function emit_probe_telemetry(obj, amount, who, bone_index)
+    -- Death callbacks reuse this event with a string marker rather than a bone.
+    -- They are not projectile impacts and must not enter the ballistic matrix.
+    if type(bone_index) ~= "number" then
+        return
+    end
     local core = sep_ballistics_core
     local debug = sep_ballistics_debug
     if not core or type(core.from_engine) ~= "function" or not debug or type(debug.emit) ~= "function" then

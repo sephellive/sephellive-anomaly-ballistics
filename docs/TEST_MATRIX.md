@@ -36,3 +36,21 @@ Sephellive Workshop. The local Workshop spawned `wpn_ak74` loaded with
 This proves the active-weapon, loaded-ammo, distance, NPC bone and unarmoured
 resolver paths. A positive armour-resistance case remains required before a
 damage sink can be enabled.
+
+## Final in-game execution checklist
+
+Use the Workshop loadout on Fake Start. For every row, fire at the same target
+at the listed distances and retain the `[SEP BALLISTICS]` line. Confirm the
+logged weapon, ammo, profile, muzzle factor, bone/zone, armour fields, outcome,
+residual fields and `sink=native_fallback` before any sink is enabled.
+
+1. Test each representative MRAA weapon with the issued ammo.
+2. Repeat at least one rifle round against a target with a known outfit and
+   helmet to capture a positive `armor_source` and `armor` value.
+3. Test one rapid burst and one buckshot shot to confirm no dropped telemetry.
+4. Test 9x19 PBP and .45 Hydro against unarmoured and armoured targets to
+   validate HP behavior.
+5. Test buckshot and slug at 5/25/75 m.
+
+Only after those logs show the expected qualitative relationships may the BHS
+or NPC delivery mode be considered for activation.

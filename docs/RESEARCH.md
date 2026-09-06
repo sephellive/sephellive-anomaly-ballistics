@@ -8,7 +8,8 @@
 - Installed BHS: BHS reworked 0.4. It classifies actor hit bones in
   `zzz_player_injuries.actor_on_before_hit` and derives limb damage from actor HP
   in `hit_on_update`. Its available callable integration point is
-  `zzz_player_injuries.bhs_dbg_hit(limb, damage)`.
+  `zzz_player_injuries.bhs_dbg_hit(limb, damage)`. This is a debug helper that
+  mutates actor health; it is not enabled as a production sink.
 - Existing workshop uses Modded Exes callbacks including `npc_on_before_hit` and
   `npc_on_hit_callback`.
 
@@ -20,10 +21,10 @@ curve, then emits a normalized HitResult. `sep_ballistics_bhs_adapter.script` is
 the only module that calls BHS internals. Unknown ammo preserves the native path
 and only logs a deduplicated debug warning.
 
-For player hits with BHS available, native hit power is suppressed and the adapter
-applies one calculated BHS injury. NPCs retain the engine health model but receive
-the same cartridge/impact calculation as a power scale. Mutants currently retain
-vanilla behaviour.
+Native damage is never suppressed in the current branch. Player and NPC hits can
+be resolved and logged through the same cartridge/impact calculation, but both
+BHS and NPC adapters intentionally return to native damage until their runtime
+delivery paths are proven. Mutants retain vanilla behaviour.
 
 ## References and limits
 

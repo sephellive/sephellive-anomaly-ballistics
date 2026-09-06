@@ -15,7 +15,7 @@ Local source research confirms that vanilla NPC loadout code uses the same
 `(npc, SHit, bone_id, flags)`; therefore the probe forwards its actual `bone_id`
 rather than inventing a torso zone.
 
-The next in-game gate is a debug-log capture proving, for a fired MRAA weapon:
+The original in-game gate was a debug-log capture proving:
 
 1. active weapon section;
 2. loaded ammo section selected from the effective `ammo_class`;
@@ -23,7 +23,13 @@ The next in-game gate is a debug-log capture proving, for a fired MRAA weapon:
 4. actor/NPC bone id and normalized hit zone;
 5. armour source/resistance after the armour resolver is added.
 
-No cartridge values are balanced or changed in this probe pass.
+Executed 2026-09-06 with the Workshop AK-74: telemetry resolved
+`wpn_ak74` / `ammo_5.45x39_fmj`, index 0, actual distances 6.9 m and 5.6 m,
+and NPC bones 12 (TORSO) and 15 (HEAD). The unarmoured source was `none` with
+resistance 0.000. A positive armour-resistance regression case remains open.
+
+Cartridge profiles and penetration v2 are now calculation-only; native damage
+remains active until a sink is proven.
 
 The workshop dummy is deliberately non-immortal during this probe. Its former
 pre-hit `power = 0` behaviour bypassed the very pipeline being validated. A safe

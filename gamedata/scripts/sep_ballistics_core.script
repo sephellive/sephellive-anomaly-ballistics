@@ -13,10 +13,22 @@ function calculate(input)
   residual_fraction = math.min(0.32, math.max(0.04, 0.05 + 0.15 * math.min(ratio, 1.5)))
  end
  local residual = energy * residual_fraction
- local terminal = profile.tissue * residual_fraction * (profile.terminal_multiplier or 1)
+ local expansion = 1
+ local bleeding_factor = 0.35
+ if profile.kind == "HP" and outcome ~= "STOPPED" then
+  -- Expansion is a terminal effect, not a decorative fragmentation flag.
+  expansion = profile.terminal_multiplier or 1.30
+  bleeding_factor = 0.85
+ elseif profile.kind == "SLUG" then
+  bleeding_factor = 0.45
+ elseif profile.kind == "BUCKSHOT" then
+  -- One engine hit is modeled as one pellet. Do not multiply by pellet_count.
+  bleeding_factor = 0.30
+ end
+ local terminal = profile.tissue * residual_fraction * expansion
  if outcome == "STOPPED" then terminal = 0 end
  local blunt = energy / 1000 * profile.blunt * (outcome == "PENETRATED" and .25 or 1)
- return {weapon_id=input.weapon_id or "unknown", ammo_id=input.ammo_id or "unknown", profile_id=profile_id, distance_m=math.max(0,input.distance_m or 0), hit_zone=input.hit_zone or "TORSO", impact_velocity=velocity, impact_energy=energy, armor={encountered=resistance>0,resistance=resistance,penetration_chance=chance,penetration_roll=roll,penetration_ratio=ratio,partial_chance=partial_chance,penetration_result=outcome,degradation=energy/1000*(outcome=="PENETRATED" and 1 or .4)}, projectile={residual_energy=residual,residual_penetration=capability * residual_fraction,deformation_factor=1-residual_fraction,deformation=outcome=="STOPPED" and "stopped" or "deformed",fragmentation=profile.kind=="HP"},body={tissue_damage=terminal,bleeding=terminal*(profile.kind=="HP" and .85 or .35),blunt_trauma=blunt,shock=blunt*.5},sink="native_fallback"}
+ return {weapon_id=input.weapon_id or "unknown", ammo_id=input.ammo_id or "unknown", profile_id=profile_id, distance_m=math.max(0,input.distance_m or 0), hit_zone=input.hit_zone or "TORSO", impact_velocity=velocity, impact_energy=energy, armor={encountered=resistance>0,resistance=resistance,penetration_chance=chance,penetration_roll=roll,penetration_ratio=ratio,partial_chance=partial_chance,penetration_result=outcome,degradation=energy/1000*(outcome=="PENETRATED" and 1 or .4)}, projectile={residual_energy=residual,residual_penetration=capability * residual_fraction,deformation_factor=1-residual_fraction,deformation=outcome=="STOPPED" and "stopped" or "deformed",fragmentation=profile.kind=="HP",expansion=expansion},body={tissue_damage=terminal,bleeding=terminal*bleeding_factor,blunt_trauma=blunt,shock=blunt*.5},sink="native_fallback"}
 end
 function from_engine(target, hit, amount, shooter, bone)
  -- Native APIs do not expose shot distance/ammo consistently; retain native damage as

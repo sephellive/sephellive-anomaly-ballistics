@@ -22,6 +22,7 @@ local profiles = {
     -- multiply terminal damage by pellet_count inside a single hit event.
     ["12_buck"] = {caliber="12ga", mass_g=3.5, muzzle_velocity=390, penetration=11, retention=0.0040, drag=0.0050, tissue=8, blunt=0.18, pellet_count=8, kind="BUCKSHOT"},
     ["12_slug"] = {caliber="12ga", mass_g=32, muzzle_velocity=450, penetration=36, retention=0.0020, drag=0.0025, tissue=36, blunt=0.35, kind="SLUG"},
+    ["12_dart"] = {caliber="12ga", mass_g=7.0, muzzle_velocity=520, penetration=28, retention=0.0018, drag=0.0020, tissue=18, blunt=0.12, kind="AP"},
 }
 local exact = {
  ["ammo_9x19_fmj"]="9x19_fmj", ["ammo_9x19_pbp"]="9x19_hp", ["ammo_9x19_ap"]="9x19_ap",
@@ -31,7 +32,7 @@ local exact = {
  ["ammo_7.62x39_fmj"]="76239_fmj", ["ammo_7.62x39_ap"]="76239_ap",
  ["ammo_7.62x51_fmj"]="76251_fmj", ["ammo_7.62x51_ap"]="76251_ap",
  ["ammo_7.62x54_7h1"]="76254_fmj", ["ammo_7.62x54_7h14"]="76254_ap", ["ammo_7.62x54_ap"]="76254_ap",
- ["ammo_12x70_buck"]="12_buck", ["ammo_12x70_buck_self"]="12_buck", ["ammo_12x76_zhekan"]="12_slug", ["ammo_12x76_dart"]="12_slug", ["ammo_12x76_bull"]="12_slug",
+ ["ammo_12x70_buck"]="12_buck", ["ammo_12x70_buck_self"]="12_buck", ["ammo_12x76_zhekan"]="12_slug", ["ammo_12x76_dart"]="12_dart", ["ammo_12x76_bull"]="12_slug",
 }
 local fallback = {caliber="unknown", mass_g=7, muzzle_velocity=400, penetration=18, retention=0.002, drag=0.002, tissue=15, blunt=0.1, kind="FALLBACK"}
 local resolved = {}

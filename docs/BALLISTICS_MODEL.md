@@ -25,5 +25,7 @@ only until a safe engine adapter is validated.
 - Buckshot: per-pellet abstraction. One hit event is one pellet; total shell
   mass is never multiplied again by pellet count.
 - Slug: high blunt transfer and meaningful penetration.
+- Dart: a separate real 12ga section, treated as a light AP projectile rather
+  than being incorrectly folded into a slug profile.
 
 Native damage remains active until BHS/NPC sinks are proven end-to-end.

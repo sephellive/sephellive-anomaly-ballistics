@@ -7,5 +7,13 @@ end
 function emit(r)
  if not enabled then return end
  local x=r.runtime or {}
- printf("[SEP BALLISTICS] weapon=%s ammo=%s index=%s speed=%s distance=%.1f bone=%s zone=%s armor_source=%s armor=%.3f chance=%.0f%% result=%s residual=%.0f tissue=%.1f bleed=%.1f blunt=%.1f",r.weapon_id,r.ammo_id,tostring(x.ammo_index),tostring(x.weapon_bullet_speed),r.distance_m,tostring(r.armor.bone_id),r.hit_zone,tostring(r.armor.source),r.armor.resistance,r.armor.penetration_chance*100,r.armor.penetration_result,r.projectile.residual_energy,r.body.tissue_damage,r.body.bleeding,r.body.blunt_trauma)
+ local line = string.format(
+  "[SEP BALLISTICS] weapon=%s ammo=%s index=%s speed=%s distance=%.1f bone=%s zone=%s armor_source=%s armor=%.3f chance=%.0f%% result=%s residual=%.0f tissue=%.1f bleed=%.1f blunt=%.1f",
+  tostring(r.weapon_id), tostring(r.ammo_id), tostring(x.ammo_index), tostring(x.weapon_bullet_speed),
+  tonumber(r.distance_m) or 0, tostring(r.armor.bone_id), tostring(r.hit_zone), tostring(r.armor.source),
+  tonumber(r.armor.resistance) or 0, (tonumber(r.armor.penetration_chance) or 0) * 100,
+  tostring(r.armor.penetration_result), tonumber(r.projectile.residual_energy) or 0,
+  tonumber(r.body.tissue_damage) or 0, tonumber(r.body.bleeding) or 0, tonumber(r.body.blunt_trauma) or 0
+ )
+ printf("%s", line)
 end

@@ -1,8 +1,9 @@
 # Sephellive Anomaly Ballistics
 
-Cartridge-centric ballistic module for S.T.A.L.K.E.R. Anomaly 1.5.3. It converts
+Cartridge-centric ballistic module for S.T.A.L.K.E.R. Anomaly 1.5.3. It resolves
 ammunition, distance, armour interaction, and hit zone into a normalized result
-that is applied through the existing Body Health System.
+with live telemetry. The BHS/NPC damage sinks are deliberately not enabled until
+their runtime delivery paths are proven.
 
 ## Requirements
 
@@ -36,12 +37,16 @@ To download and install the latest GitHub Release instead of the local files:
 ## Architecture
 
 ```text
-ammo -> impact state -> armour -> terminal result -> BHS
+ammo -> impact state -> armour -> terminal result -> safe damage sink
 ```
 
 All shipped addon files are under `gamedata/`; this repository contains no MO2
 packages or unrelated content modules. See `docs/` for MRAA, BHS, model, research,
 and test-matrix details.
+
+Current runtime evidence proves active weapon, loaded ammo, distance, NPC bone
+and the unarmoured armour path. A positive armour-resistance regression test and
+end-to-end BHS/NPC delivery remain open; native damage is retained as fail-safe.
 
 ## Branching
 

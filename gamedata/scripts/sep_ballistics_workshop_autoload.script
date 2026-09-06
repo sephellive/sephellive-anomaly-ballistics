@@ -134,26 +134,6 @@ local function clear_expired_markers()
     end
 end
 
-local function target_object()
-    if not get_story_se_object then
-        return nil
-    end
-
-    local se_obj = get_story_se_object(WORKSHOP.target_story)
-    if not se_obj then
-        return nil
-    end
-
-    if level and level.object_by_id then
-        local obj = level.object_by_id(se_obj.id)
-        if obj then
-            return obj
-        end
-    end
-
-    return nil
-end
-
 local function spawn_dummy_if_needed()
     if state.dummy_spawned then
         return
@@ -194,58 +174,6 @@ local function spawn_dummy_if_needed()
     state.dummy_spawned = true
     state.launch_requested = false
     push_news("sep_ballistics_workshop_news_title", game.translate_string("sep_ballistics_workshop_news_spawned"))
-end
-
-local function on_test_fake_start_clicked(menu)
-    state.launch_requested = true
-    state.dummy_spawned = false
-    state.warned_level = false
-
-    if menu and type(menu.OnButton_new_stalker_game) == "function" then
-        menu:OnButton_new_stalker_game()
-        return
-    end
-
-    local console = get_console and get_console() or nil
-    if console then
-        console:execute("g_game_difficulty gd_stalker")
-        console:execute("start server(all/single/alife/new) client(localhost)")
-        console:execute("main_menu off")
-    end
-end
-
-local function on_xml_read(xml_file_name, xml_obj)
-    if not xml_file_name or not xml_file_name:find([[ui\ui_mm_main]]) then
-        return
-    end
-
-    local existing = xml_obj:query("menu_main btn[name=btn_sep_ballistics_workshop]")
-    if existing and existing[1] then
-        return
-    end
-
-    local menu_main_list = xml_obj:query("menu_main")
-    local menu_main = menu_main_list and menu_main_list[1] or nil
-    if not menu_main then
-        return
-    end
-
-    xml_obj:insertFromXMLString(
-        [[<btn name="btn_sep_ballistics_workshop" caption="sep_ballistics_workshop_menu"/>]],
-        menu_main,
-        #menu_main.kids
-    )
-end
-
-local function on_main_menu_init(menu)
-    if not menu or menu._sep_ballistics_workshop_hooked then
-        return
-    end
-
-    menu._sep_ballistics_workshop_hooked = true
-    if menu.AddCallback then
-        menu:AddCallback(WORKSHOP.button_name, ui_events.BUTTON_CLICKED, on_test_fake_start_clicked, menu)
-    end
 end
 
 local function npc_section_name(obj)
@@ -316,10 +244,6 @@ local function on_game_load()
     spawn_dummy_if_needed()
 end
 
-local function npc_on_before_hit(obj, hit, amount, flags)
-    return mark_immortal(hit, obj)
-end
-
 local function npc_on_hit_callback(obj, amount, local_direction, who, bone_index)
     report_hit(obj, amount, who, bone_index)
     emit_probe_telemetry(obj, amount, who, bone_index)
@@ -339,6 +263,7 @@ local function save_state(m_data)
     m_data.sep_ballistics_workshop = {
         launch_requested = state.launch_requested,
         dummy_spawned = state.dummy_spawned,
+        loadout_granted = state.loadout_granted,
         warned_level = state.warned_level,
     }
 end
@@ -351,6 +276,7 @@ local function load_state(m_data)
 
     state.launch_requested = saved.launch_requested and true or false
     state.dummy_spawned = saved.dummy_spawned and true or false
+    state.loadout_granted = saved.loadout_granted and true or false
     state.warned_level = saved.warned_level and true or false
 end
 
